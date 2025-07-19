@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIFA World Cup 2026 Group Stage Draw Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>FIFA World Cup 2026</h1>
+            <h2>Group Stage Draw Simulator</h2>
+            <p style="color: var(--fifa-red); font-size: 1rem; margin: 10px 0;">
+                Based on Current Qualification Status & FIFA Rankings
+            </p>
+            <div style="display: flex; justify-content: center; gap: 20px; align-items: center; margin: 15px 0;">
+                <div style="font-size: 0.9rem; color: var(--fifa-dark);">
+                    <span style="color: var(--fifa-green);">●</span> Qualified (13) 
+                    <span style="color: var(--fifa-light-blue);">●</span> Projected (33) 
+                    <span style="color: var(--fifa-red);">●</span> Playoff Winners (6)
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center; margin-top: 20px;">
+                <button id="drawButton" class="draw-button">Simulate Complete Draw</button>
+            </div>
+        </header>
+        
+        <div class="playoffs-section" id="playoffsSection" style="display: none;">
+            <div class="playoffs-header">
+                <h3>March 2026 Playoff Results</h3>
+                <button class="toggle-playoffs" id="togglePlayoffs" onclick="togglePlayoffDetails()">
+                    <span id="toggleIcon">▼</span> Show Details
+                </button>
+            </div>
+            <div class="playoffs-container collapsed" id="playoffsContainer">
+                <!-- Playoff results will be generated here -->
+            </div>
+        </div>
+        
+        <div class="pots-section">
+            <h3>Pots</h3>
+            <div class="pots-container" id="potsContainer">
+                <!-- Pots will be generated here -->
+            </div>
+        </div>
+        
+        <div class="groups-section">
+            <h3>Groups</h3>
+            <div class="groups-container" id="groupsContainer">
+                <!-- Groups will be generated here -->
+            </div>
+        </div>
+        
+        <div class="matches-section">
+            <h3>Match Schedule</h3>
+            <div class="matches-container" id="matchesContainer">
+                <!-- Matches will be generated here -->
+            </div>
+        </div>
+    </div>
+    
+    <script src="data.js"></script>
+    <script src="playoffs.js"></script>
+    <script src="simulator.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

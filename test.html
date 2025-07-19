@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FIFA World Cup 2026 Simulator Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .pass { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .fail { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>FIFA World Cup 2026 Simulator Test Results</h1>
+    <div id="test-results"></div>
+    
+    <script src="data.js"></script>
+    <script src="simulator.js"></script>
+    <script>
+        function runTests() {
+            const results = [];
+            const simulator = new WorldCupDrawSimulator();
+            
+            // Test 1: Check pot creation
+            const pots = simulator.getPots();
+            const test1 = pots[1].length === 12 && pots[2].length === 12 && pots[3].length === 12 && pots[4].length === 12;
+            results.push({
+                name: "Pot Creation",
+                pass: test1,
+                message: test1 ? "All pots have correct number of teams" : `Pot sizes: ${pots[1].length}, ${pots[2].length}, ${pots[3].length}, ${pots[4].length}`
+            });
+            
+            // Test 2: Check host assignments
+            const hosts = pots[1].filter(team => team.host);
+            const test2 = hosts.length === 3 && 
+                         hosts.some(t => t.name === 'Mexico') && 
+                         hosts.some(t => t.name === 'Canada') && 
+                         hosts.some(t => t.name === 'United States');
+            results.push({
+                name: "Host Team Assignment",
+                pass: test2,
+                message: test2 ? "All host teams correctly assigned to Pot 1" : "Host teams not properly assigned"
+            });
+            
+            // Test 3: Draw simulation
+            const groups = simulator.simulateDraw();
+            const test3 = Object.keys(groups).length === 12 && 
+                         groups['A'][0].name === 'Mexico' && 
+                         groups['B'][0].name === 'Canada' && 
+                         groups['D'][0].name === 'United States';
+            results.push({
+                name: "Draw Simulation",
+                pass: test3,
+                message: test3 ? "Draw completed with correct host assignments" : "Draw simulation failed"
+            });
+            
+            // Test 4: Confederation rules
+            let test4 = true;
+            let confederationTest = "";
+            Object.keys(groups).forEach(groupLetter => {
+                const group = groups[groupLetter];
+                const confederationCounts = {};
+                group.forEach(team => {
+                    if (!team.placeholder) {
+                        confederationCounts[team.confederation] = (confederationCounts[team.confederation] || 0) + 1;
+                    }
+                });
+                
+                // Check UEFA (max 2) and others (max 1)
+                Object.keys(confederationCounts).forEach(conf => {
+                    const maxAllowed = conf === 'UEFA' ? 2 : 1;
+                    if (confederationCounts[conf] > maxAllowed) {
+                        test4 = false;
+                        confederationTest += `Group ${groupLetter}: ${conf} has ${confederationCounts[conf]} teams (max ${maxAllowed}). `;
+                    }
+                });
+            });
+            results.push({
+                name: "Confederation Rules",
+                pass: test4,
+                message: test4 ? "All confederation restrictions respected" : confederationTest
+            });
+            
+            // Test 5: Match generation
+            const matches = simulator.generateMatches();
+            const test5 = matches.length === 72 && matches.every(m => m.venue && m.date && m.team1 && m.team2);
+            results.push({
+                name: "Match Generation",
+                pass: test5,
+                message: test5 ? `Generated ${matches.length} matches with complete data` : "Match generation failed"
+            });
+            
+            // Display results
+            const resultsDiv = document.getElementById('test-results');
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.pass ? 'pass' : 'fail'}`;
+                div.innerHTML = `<strong>${result.name}:</strong> ${result.pass ? 'PASS' : 'FAIL'} - ${result.message}`;
+                resultsDiv.appendChild(div);
+            });
+            
+            const passCount = results.filter(r => r.pass).length;
+            const totalTests = results.length;
+            
+            const summary = document.createElement('div');
+            summary.className = `test-result ${passCount === totalTests ? 'pass' : 'fail'}`;
+            summary.innerHTML = `<strong>Summary:</strong> ${passCount}/${totalTests} tests passed`;
+            resultsDiv.insertBefore(summary, resultsDiv.firstChild);
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>
