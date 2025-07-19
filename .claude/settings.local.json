@@ -3,7 +3,8 @@
     "allow": [
       "Bash(open:*)",
       "Bash(node:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(gh auth:*)"
     ],
     "deny": []
   }
