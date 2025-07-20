@@ -114,12 +114,26 @@ class WorldCupApp {
                 const playoffLabel = team.playoffWinner ? 
                     (team.playoffPath ? ` (${team.playoffPath})` : ' (Playoff Winner)') : '';
                 
+                const confederationInfo = CONFEDERATIONS[team.confederation] || { logo: '🏳️', name: team.confederation };
+                
+                // Special handling for playoff placeholders
+                const teamNameDisplay = team.placeholder ? 
+                    `${team.name}${team.description ? ` (${team.description})` : ''}` : 
+                    `${team.name}${playoffLabel}`;
+                
+                const pointsDisplay = team.placeholder ? 
+                    (team.points === 'TBD' ? `<div class="team-points placeholder-points">March 2026</div>` : '') :
+                    (team.points ? `<div class="team-points">${team.points} pts</div>` : '');
+                
                 teamDiv.innerHTML = `
                     <span class="team-flag">${team.flag}</span>
                     <div class="team-info">
-                        <div class="team-name">${team.name}${playoffLabel}</div>
-                        <div class="team-confederation ${team.confederation}">${team.confederation}</div>
-                        ${!team.placeholder ? `<div class="team-points">${team.points} pts</div>` : ''}
+                        <div class="team-name">${teamNameDisplay}</div>
+                        <div class="team-confederation ${team.confederation}">
+                            <span>${confederationInfo.logo}</span>
+                            <span>${confederationInfo.name}</span>
+                        </div>
+                        ${pointsDisplay}
                     </div>
                 `;
                 
@@ -187,11 +201,11 @@ class WorldCupApp {
             pathDiv.innerHTML = `
                 <div class="playoff-path-header">Path ${path.path}</div>
                 <div class="playoff-match semifinal">
-                    <strong>Semi-final 1:</strong> ${path.semiFinals[0].result}
+                    <strong>SF1:</strong> ${path.semiFinals[0].result}
                     <div class="match-probability">${path.semiFinals[0].matchup}</div>
                 </div>
                 <div class="playoff-match semifinal">
-                    <strong>Semi-final 2:</strong> ${path.semiFinals[1].result}
+                    <strong>SF2:</strong> ${path.semiFinals[1].result}
                     <div class="match-probability">${path.semiFinals[1].matchup}</div>
                 </div>
                 <div class="playoff-match final">
@@ -200,7 +214,7 @@ class WorldCupApp {
                 </div>
                 <div class="playoff-winner">
                     <span class="team-flag">${path.winner.flag}</span>
-                    ${path.winner.name} Qualifies!
+                    ${path.winner.name}
                 </div>
             `;
             
@@ -222,18 +236,18 @@ class WorldCupApp {
         interDiv.className = 'playoff-path';
         
         interDiv.innerHTML = `
-            <div class="playoff-path-header">Participants (6 teams)</div>
+            <div class="playoff-path-header">6 Teams → 2 Spots</div>
             ${results.intercontinental.participants.map(team => 
-                `<div style="margin: 5px 0; padding: 5px; background: var(--fifa-white); border-radius: 4px;">
-                    <span class="team-flag">${team.flag}</span> ${team.name} (${team.playoffSlot})
+                `<div style="margin: 2px 0; padding: 2px; background: var(--fifa-white); border-radius: 2px; font-size: 0.5rem;">
+                    <span class="team-flag">${team.flag}</span> ${team.name}
                 </div>`
             ).join('')}
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px;">
                 <div>
                     <div class="playoff-path-header">Path 1</div>
                     <div class="playoff-match semifinal">
-                        <strong>First Round:</strong> ${results.intercontinental.semiFinals[0].firstMatch.result}
+                        <strong>R1:</strong> ${results.intercontinental.semiFinals[0].firstMatch.result}
                     </div>
                     <div class="playoff-match final">
                         <strong>Final:</strong> ${results.intercontinental.semiFinals[0].final.result}
@@ -246,7 +260,7 @@ class WorldCupApp {
                 <div>
                     <div class="playoff-path-header">Path 2</div>
                     <div class="playoff-match semifinal">
-                        <strong>First Round:</strong> ${results.intercontinental.semiFinals[1].firstMatch.result}
+                        <strong>R1:</strong> ${results.intercontinental.semiFinals[1].firstMatch.result}
                     </div>
                     <div class="playoff-match final">
                         <strong>Final:</strong> ${results.intercontinental.semiFinals[1].final.result}
@@ -297,12 +311,26 @@ class WorldCupApp {
                 const playoffLabel = team.playoffWinner ? 
                     (team.playoffPath ? ` (${team.playoffPath})` : ' (Playoff Winner)') : '';
                 
+                const confederationInfo = CONFEDERATIONS[team.confederation] || { logo: '🏳️', name: team.confederation };
+                
+                // Special handling for playoff placeholders
+                const teamNameDisplay = team.placeholder ? 
+                    `${team.name}${team.description ? ` (${team.description})` : ''}` : 
+                    `${team.name}${playoffLabel}`;
+                
+                const pointsDisplay = team.placeholder ? 
+                    (team.points === 'TBD' ? `<div class="team-points placeholder-points">March 2026</div>` : '') :
+                    (team.points ? `<div class="team-points">${team.points} pts</div>` : '');
+                
                 teamDiv.innerHTML = `
                     <span class="team-flag">${team.flag}</span>
                     <div class="team-info">
-                        <div class="team-name">${team.name}${playoffLabel}</div>
-                        <div class="team-confederation ${team.confederation}">${team.confederation}</div>
-                        ${!team.placeholder ? `<div class="team-points">${team.points} pts</div>` : ''}
+                        <div class="team-name">${teamNameDisplay}</div>
+                        <div class="team-confederation ${team.confederation}">
+                            <span>${confederationInfo.logo}</span>
+                            <span>${confederationInfo.name}</span>
+                        </div>
+                        ${pointsDisplay}
                     </div>
                 `;
                 

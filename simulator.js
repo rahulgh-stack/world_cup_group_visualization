@@ -57,10 +57,62 @@ class WorldCupDrawSimulator {
         console.log('🔄 Playoff winners in team list:', this.allTeams.filter(t => t.playoffWinner).map(t => t.name));
         
         this.createPots();
+        this.testEdgeCases();
         
         return this.playoffResults;
     }
 
+    testEdgeCases() {
+        console.log('\n🧪 Testing 5 Extreme Edge Cases...');
+        
+        // Edge Case 1: UEFA Overflow - What if 10 UEFA teams are in Pot 4?
+        const uefaInPot4 = this.pots[4].filter(t => t.confederation === 'UEFA').length;
+        console.log(`🛑 Edge Case 1 - UEFA in Pot 4: ${uefaInPot4} teams`);
+        if (uefaInPot4 > 8) {
+            console.warn(`⚠️ Risk: Too many UEFA teams in Pot 4 could cause placement issues`);
+        }
+        
+        // Edge Case 2: CAF Clustering - Are all CAF teams in one pot?
+        const cafDistribution = [1,2,3,4].map(pot => 
+            this.pots[pot].filter(t => t.confederation === 'CAF').length
+        );
+        console.log(`🌍 Edge Case 2 - CAF distribution: Pot1:${cafDistribution[0]}, Pot2:${cafDistribution[1]}, Pot3:${cafDistribution[2]}, Pot4:${cafDistribution[3]}`);
+        const maxCafInOnePot = Math.max(...cafDistribution);
+        if (maxCafInOnePot > 6) {
+            console.warn(`⚠️ Risk: ${maxCafInOnePot} CAF teams in one pot could cause issues`);
+        }
+        
+        // Edge Case 3: Host Ripple Effect - How many CONCACAF teams per pot?
+        const concacafDistribution = [1,2,3,4].map(pot => 
+            this.pots[pot].filter(t => t.confederation === 'CONCACAF').length
+        );
+        console.log(`🌎 Edge Case 3 - CONCACAF distribution: Pot1:${concacafDistribution[0]}, Pot2:${concacafDistribution[1]}, Pot3:${concacafDistribution[2]}, Pot4:${concacafDistribution[3]}`);
+        
+        // Edge Case 4: Single Team Confederations - OFC isolation
+        const ofcTeams = this.allTeams.filter(t => t.confederation === 'OFC');
+        console.log(`🌊 Edge Case 4 - OFC teams: ${ofcTeams.length} (${ofcTeams.map(t => t.name).join(', ')})`);
+        if (ofcTeams.length === 1) {
+            const ofcPot = [1,2,3,4].find(pot => this.pots[pot].some(t => t.confederation === 'OFC'));
+            console.log(`🚨 Single OFC team in Pot ${ofcPot}`);
+        }
+        
+        // Edge Case 5: Mathematical Constraints - Total teams by confederation
+        const confederationTotals = {};
+        this.allTeams.forEach(team => {
+            confederationTotals[team.confederation] = (confederationTotals[team.confederation] || 0) + 1;
+        });
+        
+        console.log(`📊 Edge Case 5 - Total confederation counts:`);
+        Object.keys(confederationTotals).forEach(conf => {
+            const count = confederationTotals[conf];
+            const maxSlots = conf === 'UEFA' ? 24 : 12; // UEFA can have 2 per group, others 1
+            console.log(`  ${conf}: ${count} teams (max possible: ${maxSlots})`);
+            if (count > maxSlots) {
+                console.error(`❌ IMPOSSIBLE: ${conf} has ${count} teams but only ${maxSlots} slots available!`);
+            }
+        });
+    }
+    
     createPots() {
         console.log('Creating pots based on FIFA rankings...');
         
@@ -128,16 +180,24 @@ class WorldCupDrawSimulator {
         this.groups['B'].push(this.pots[1].find(team => team.name === 'Canada'));
         this.groups['D'].push(this.pots[1].find(team => team.name === 'United States'));
 
-        // Draw remaining Pot 1 teams
+        // Draw remaining Pot 1 teams using FIFA procedure  
         const remainingPot1 = this.pots[1].filter(team => 
             !['Mexico', 'Canada', 'United States'].includes(team.name)
         );
         const availableGroups = ['C', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        
+        if (remainingPot1.length !== availableGroups.length) {
+            console.error(`❌ CRITICAL: Pot 1 has ${remainingPot1.length} remaining teams but ${availableGroups.length} available groups`);
+        }
+        
+        // Shuffle both arrays to ensure randomness
         this.shuffleArray(remainingPot1);
         this.shuffleArray(availableGroups);
         
-        for (let i = 0; i < remainingPot1.length; i++) {
+        // Assign one team to each group
+        for (let i = 0; i < Math.min(availableGroups.length, remainingPot1.length); i++) {
             this.groups[availableGroups[i]].push(remainingPot1[i]);
+            console.log(`🎯 Group ${availableGroups[i]}: ${remainingPot1[i].name} (Pot 1)`);
         }
 
         // Draw Pots 2, 3, and 4
@@ -149,29 +209,78 @@ class WorldCupDrawSimulator {
     }
 
     drawPot(potNumber) {
-        console.log(`Drawing Pot ${potNumber}...`);
-        const teams = [...this.pots[potNumber]];
-        this.shuffleArray(teams);
-
-        for (const team of teams) {
-            const availableGroups = this.getAvailableGroups(team);
-            if (availableGroups.length === 0) {
-                console.warn(`❌ No available groups for ${team.name} (${team.confederation}). Draw may need redistribution.`);
-                // Try to find any group with space, ignoring confederation rules temporarily
-                const groupsWithSpace = Object.keys(this.groups).filter(g => this.groups[g].length < 4);
-                if (groupsWithSpace.length > 0) {
-                    const fallbackGroup = groupsWithSpace[0];
-                    console.warn(`⚠️ Placing ${team.name} in ${fallbackGroup} as fallback`);
-                    this.groups[fallbackGroup].push(team);
+        console.log(`🎱 Drawing Pot ${potNumber} - FIFA Style...`);
+        const availableTeams = [...this.pots[potNumber]];
+        
+        // CRITICAL FIX: Ensure every group gets exactly 1 team from this pot
+        const incompleteGroups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+            .filter(groupLetter => this.groups[groupLetter].length < potNumber);
+        
+        console.log(`📊 Pot ${potNumber}: ${availableTeams.length} teams for ${incompleteGroups.length} groups`);
+        
+        // Use constrained placement algorithm
+        const placements = this.solveConstrainedPlacement(availableTeams, incompleteGroups);
+        
+        if (placements.length !== incompleteGroups.length) {
+            console.error(`❌ CRITICAL: Could only place ${placements.length}/${incompleteGroups.length} teams from Pot ${potNumber}`);
+            console.error(`Unplaced teams:`, availableTeams.filter(t => !placements.find(p => p.team === t)).map(t => `${t.name}(${t.confederation})`));
+            console.error(`Empty groups:`, incompleteGroups.filter(g => !placements.find(p => p.group === g)));
+        }
+        
+        // Execute placements
+        placements.forEach(placement => {
+            this.groups[placement.group].push(placement.team);
+            console.log(`🎯 Group ${placement.group}: ${placement.team.name} (${placement.team.confederation}) from Pot ${potNumber}`);
+        });
+    }
+    
+    solveConstrainedPlacement(teams, groups) {
+        const placements = [];
+        const availableTeams = [...teams];
+        const availableGroups = [...groups];
+        
+        // Greedy assignment with backtracking
+        while (availableGroups.length > 0 && availableTeams.length > 0) {
+            let placed = false;
+            
+            // Try to place a team in any available group
+            for (let i = 0; i < availableGroups.length; i++) {
+                const group = availableGroups[i];
+                const eligibleTeams = availableTeams.filter(team => 
+                    this.canAddTeamToGroup(team, this.groups[group])
+                );
+                
+                if (eligibleTeams.length > 0) {
+                    // Prioritize teams with fewer placement options (most constrained first)
+                    const teamWithOptions = eligibleTeams.map(team => ({
+                        team,
+                        options: availableGroups.filter(g => 
+                            this.canAddTeamToGroup(team, this.groups[g])
+                        ).length
+                    }));
+                    
+                    teamWithOptions.sort((a, b) => a.options - b.options);
+                    const chosenTeam = teamWithOptions[0].team;
+                    
+                    placements.push({ team: chosenTeam, group });
+                    availableTeams.splice(availableTeams.indexOf(chosenTeam), 1);
+                    availableGroups.splice(i, 1);
+                    placed = true;
+                    break;
                 }
-                continue;
             }
             
-            const randomGroup = availableGroups[Math.floor(Math.random() * availableGroups.length)];
-            this.groups[randomGroup].push(team);
-            console.log(`✅ ${team.name} (${team.confederation}) → Group ${randomGroup}`);
+            if (!placed) {
+                console.error(`❌ Cannot place any remaining teams in available groups`);
+                console.error(`Remaining teams:`, availableTeams.map(t => `${t.name}(${t.confederation})`));
+                console.error(`Remaining groups:`, availableGroups);
+                break;
+            }
         }
+        
+        return placements;
     }
+    
 
     getAvailableGroups(team) {
         const groupLetters = Object.keys(this.groups);

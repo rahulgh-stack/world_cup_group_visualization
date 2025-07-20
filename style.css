@@ -6,8 +6,10 @@
     --fifa-red: #E60026;
     --fifa-green: #00A651;
     --fifa-dark: #1a1a1a;
-    --fifa-gray: #f5f5f5;
+    --fifa-gray: #f8f9fa;
     --fifa-white: #ffffff;
+    --fifa-shadow: rgba(0, 75, 147, 0.15);
+    --fifa-border: rgba(0, 75, 147, 0.2);
 }
 
 * {
@@ -26,41 +28,43 @@ body {
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 10px;
 }
 
 /* Header */
 .header {
     text-align: center;
     background: var(--fifa-white);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    margin-bottom: 30px;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
 }
 
 .header h1 {
     color: var(--fifa-blue);
-    font-size: 2.5rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .header h2 {
     color: var(--fifa-red);
-    font-size: 1.5rem;
-    margin-bottom: 20px;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
 }
 
 .draw-button, .playoff-button {
     border: none;
-    padding: 15px 30px;
-    font-size: 1.2rem;
+    padding: 8px 16px;
+    font-size: 0.8rem;
     font-weight: bold;
-    border-radius: 25px;
+    border-radius: 15px;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .draw-button {
@@ -95,53 +99,54 @@ body {
 /* Sections */
 .pots-section, .groups-section, .matches-section, .playoffs-section {
     background: var(--fifa-white);
-    margin: 30px 0;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    margin: 12px 0;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .pots-section h3, .groups-section h3, .matches-section h3, .playoffs-section h3 {
     color: var(--fifa-blue);
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    border-bottom: 3px solid var(--fifa-gold);
-    padding-bottom: 10px;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--fifa-gold);
+    padding-bottom: 4px;
 }
 
 /* Pots Container */
 .pots-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .pot {
     background: linear-gradient(135deg, var(--fifa-gray) 0%, #e8e8e8 100%);
-    border-radius: 10px;
-    padding: 20px;
-    border: 2px solid var(--fifa-blue);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--fifa-blue);
 }
 
 .pot-header {
     background: var(--fifa-blue);
     color: var(--fifa-white);
-    padding: 10px;
-    border-radius: 8px;
+    padding: 4px;
+    border-radius: 4px;
     text-align: center;
     font-weight: bold;
-    margin-bottom: 15px;
+    font-size: 0.7rem;
+    margin-bottom: 6px;
 }
 
 .pot-team {
     display: flex;
     align-items: center;
-    padding: 8px 12px;
-    margin: 5px 0;
+    padding: 3px 5px;
+    margin: 2px 0;
     background: var(--fifa-white);
-    border-radius: 8px;
-    border-left: 4px solid var(--fifa-green);
+    border-radius: 3px;
+    border-left: 2px solid var(--fifa-green);
     transition: transform 0.2s ease;
 }
 
@@ -150,8 +155,9 @@ body {
 }
 
 .team-flag {
-    font-size: 1.5rem;
-    margin-right: 10px;
+    font-size: 0.9rem;
+    margin-right: 4px;
+    min-width: 16px;
 }
 
 .team-info {
@@ -160,37 +166,43 @@ body {
 
 .team-name {
     font-weight: bold;
+    font-size: 0.6rem;
     color: var(--fifa-dark);
+    line-height: 1.1;
 }
 
 .team-confederation {
-    font-size: 0.8rem;
+    font-size: 0.5rem;
     color: #666;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     background: var(--fifa-gray);
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-top: 2px;
+    padding: 1px 2px;
+    border-radius: 2px;
+    margin-top: 1px;
+    font-weight: 500;
 }
 
 .team-points {
-    font-size: 0.9rem;
+    font-size: 0.5rem;
     color: var(--fifa-blue);
-    font-weight: bold;
+    font-weight: 600;
+    margin-top: 1px;
 }
 
 /* Groups Container */
 .groups-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
 }
 
 .group {
     background: linear-gradient(135deg, var(--fifa-white) 0%, var(--fifa-gray) 100%);
-    border-radius: 12px;
-    padding: 20px;
-    border: 3px solid var(--fifa-blue);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--fifa-blue);
     transition: transform 0.3s ease;
 }
 
@@ -202,23 +214,23 @@ body {
 .group-header {
     background: var(--fifa-blue);
     color: var(--fifa-white);
-    padding: 12px;
-    border-radius: 8px;
+    padding: 6px;
+    border-radius: 4px;
     text-align: center;
-    font-size: 1.4rem;
+    font-size: 0.8rem;
     font-weight: bold;
-    margin-bottom: 15px;
+    margin-bottom: 6px;
 }
 
 .group-team {
     display: flex;
     align-items: center;
-    padding: 12px;
-    margin: 8px 0;
+    padding: 4px 6px;
+    margin: 3px 0;
     background: var(--fifa-white);
-    border-radius: 8px;
-    border-left: 5px solid var(--fifa-gold);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+    border-left: 2px solid var(--fifa-gold);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .group-team:nth-child(even) {
@@ -226,56 +238,62 @@ body {
 }
 
 .group-team .team-flag {
-    font-size: 2rem;
-    margin-right: 15px;
+    font-size: 1rem;
+    margin-right: 6px;
+    min-width: 18px;
 }
 
 .group-team .team-name {
-    font-size: 1.1rem;
+    font-size: 0.7rem;
     font-weight: bold;
     color: var(--fifa-dark);
+    line-height: 1.1;
 }
 
 .group-team .team-confederation {
-    margin-left: 10px;
+    margin-left: 4px;
     background: var(--fifa-blue);
     color: var(--fifa-white);
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 0.8rem;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-size: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
 }
 
 /* Matches Container */
 .matches-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 10px;
 }
 
 .group-matches {
     background: var(--fifa-gray);
-    border-radius: 10px;
-    padding: 20px;
-    border: 2px solid var(--fifa-blue);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--fifa-blue);
 }
 
 .group-matches-header {
     background: var(--fifa-red);
     color: var(--fifa-white);
-    padding: 10px;
-    border-radius: 6px;
+    padding: 4px;
+    border-radius: 3px;
     text-align: center;
     font-weight: bold;
-    margin-bottom: 15px;
+    font-size: 0.7rem;
+    margin-bottom: 6px;
 }
 
 .match {
     background: var(--fifa-white);
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 8px;
-    border-left: 4px solid var(--fifa-green);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 6px;
+    margin: 4px 0;
+    border-radius: 3px;
+    border-left: 2px solid var(--fifa-green);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .match-header {
@@ -288,55 +306,93 @@ body {
 .match-number {
     background: var(--fifa-blue);
     color: var(--fifa-white);
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 2px 4px;
+    border-radius: 2px;
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 0.55rem;
 }
 
 .match-date {
     color: var(--fifa-red);
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 0.55rem;
 }
 
 .match-teams {
-    font-size: 1.1rem;
+    font-size: 0.65rem;
     font-weight: bold;
     color: var(--fifa-dark);
-    margin: 8px 0;
+    margin: 3px 0;
     text-align: center;
+    line-height: 1.2;
 }
 
 .match-venue {
-    font-size: 0.9rem;
+    font-size: 0.55rem;
     color: #666;
     text-align: center;
     font-style: italic;
+    margin-top: 2px;
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .pots-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
     .container {
-        padding: 10px;
+        padding: 6px;
+    }
+    
+    .header {
+        padding: 8px;
     }
     
     .header h1 {
-        font-size: 2rem;
-    }
-    
-    .header h2 {
         font-size: 1.2rem;
     }
     
-    .pots-container,
+    .header h2 {
+        font-size: 0.8rem;
+    }
+    
+    .pots-section h3, .groups-section h3, .matches-section h3, .playoffs-section h3 {
+        font-size: 0.9rem;
+    }
+    
+    .pots-container {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
     .groups-container,
     .matches-container {
         grid-template-columns: 1fr;
+        gap: 8px;
     }
     
     .pot, .group, .group-matches {
-        margin-bottom: 15px;
+        margin-bottom: 8px;
+        padding: 6px;
+    }
+    
+    .team-flag {
+        font-size: 0.8rem;
+    }
+    
+    .group-team .team-flag {
+        font-size: 0.9rem;
+    }
+    
+    .team-name {
+        font-size: 0.55rem;
+    }
+    
+    .group-team .team-name {
+        font-size: 0.6rem;
     }
 }
 
@@ -396,6 +452,12 @@ body {
     background: #ccc !important;
 }
 
+.placeholder-points {
+    color: #888 !important;
+    font-style: italic;
+    font-size: 0.45rem !important;
+}
+
 /* Host team styling */
 .host-team {
     border-left-color: var(--fifa-gold) !important;
@@ -418,50 +480,54 @@ body {
 .team-confederation.UEFA { background: #F8C471; color: #333; }
 .team-confederation.PLAYOFF { background: #BDC3C7; }
 
-/* Playoff Results Styling */
+/* Playoff Results Styling - ULTRA COMPACT */
 .playoffs-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 8px;
 }
 
 .playoff-section {
     background: var(--fifa-gray);
-    border-radius: 10px;
-    padding: 20px;
-    border: 2px solid var(--fifa-red);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--fifa-red);
 }
 
 .playoff-header {
     background: var(--fifa-red);
     color: var(--fifa-white);
-    padding: 10px;
-    border-radius: 6px;
+    padding: 4px;
+    border-radius: 3px;
     text-align: center;
     font-weight: bold;
-    margin-bottom: 15px;
+    font-size: 0.7rem;
+    margin-bottom: 6px;
 }
 
 .playoff-path {
-    margin: 15px 0;
-    padding: 15px;
+    margin: 6px 0;
+    padding: 6px;
     background: var(--fifa-white);
-    border-radius: 8px;
-    border-left: 4px solid var(--fifa-blue);
+    border-radius: 3px;
+    border-left: 2px solid var(--fifa-blue);
 }
 
 .playoff-path-header {
     font-weight: bold;
+    font-size: 0.6rem;
     color: var(--fifa-blue);
-    margin-bottom: 10px;
+    margin-bottom: 4px;
 }
 
 .playoff-match {
-    margin: 8px 0;
-    padding: 10px;
+    margin: 3px 0;
+    padding: 4px;
     background: var(--fifa-gray);
-    border-radius: 6px;
-    border-left: 3px solid var(--fifa-green);
+    border-radius: 2px;
+    border-left: 2px solid var(--fifa-green);
+    font-size: 0.55rem;
+    line-height: 1.2;
 }
 
 .playoff-match.semifinal {
@@ -476,23 +542,25 @@ body {
 .playoff-winner {
     background: linear-gradient(135deg, var(--fifa-gold), #FFA500);
     color: var(--fifa-dark);
-    padding: 12px;
-    border-radius: 8px;
+    padding: 4px;
+    border-radius: 3px;
     text-align: center;
     font-weight: bold;
-    margin-top: 10px;
-    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+    font-size: 0.6rem;
+    margin-top: 4px;
+    box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
 }
 
 .playoff-winner .team-flag {
-    font-size: 1.5rem;
-    margin-right: 8px;
+    font-size: 0.8rem;
+    margin-right: 3px;
 }
 
 .match-probability {
-    font-size: 0.9rem;
+    font-size: 0.5rem;
     color: #666;
     font-style: italic;
+    margin-top: 1px;
 }
 
 /* Playoff Toggle Functionality */
@@ -500,17 +568,17 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
 }
 
 .toggle-playoffs {
     background: var(--fifa-light-blue);
     color: var(--fifa-white);
     border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 4px 8px;
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.6rem;
     font-weight: bold;
     transition: all 0.3s ease;
 }

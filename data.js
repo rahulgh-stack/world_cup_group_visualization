@@ -1,11 +1,11 @@
 // FIFA World Cup 2026 Data
 const CONFEDERATIONS = {
-    AFC: { name: 'AFC', fullName: 'Asian Football Confederation', color: '#FF6B35', maxPerGroup: 1 },
-    CAF: { name: 'CAF', fullName: 'Confederation of African Football', color: '#F4D03F', maxPerGroup: 1 },
-    CONCACAF: { name: 'CONCACAF', fullName: 'North American Football Confederation', color: '#85C1E9', maxPerGroup: 1 },
-    CONMEBOL: { name: 'CONMEBOL', fullName: 'South American Football Confederation', color: '#82E0AA', maxPerGroup: 1 },
-    OFC: { name: 'OFC', fullName: 'Oceania Football Confederation', color: '#D7BDE2', maxPerGroup: 1 },
-    UEFA: { name: 'UEFA', fullName: 'Union of European Football Associations', color: '#F8C471', maxPerGroup: 2 }
+    AFC: { name: 'AFC', fullName: 'Asian Football Confederation', color: '#FF6B35', maxPerGroup: 1, logo: '🌏' },
+    CAF: { name: 'CAF', fullName: 'Confederation of African Football', color: '#F4D03F', maxPerGroup: 1, logo: '🌍' },
+    CONCACAF: { name: 'CONCACAF', fullName: 'North American Football Confederation', color: '#85C1E9', maxPerGroup: 1, logo: '🌎' },
+    CONMEBOL: { name: 'CONMEBOL', fullName: 'South American Football Confederation', color: '#82E0AA', maxPerGroup: 1, logo: '🌎' },
+    OFC: { name: 'OFC', fullName: 'Oceania Football Confederation', color: '#D7BDE2', maxPerGroup: 1, logo: '🌊' },
+    UEFA: { name: 'UEFA', fullName: 'Union of European Football Associations', color: '#F8C471', maxPerGroup: 2, logo: '🇪🇺' }
 };
 
 // Direct Qualified Teams (42 total based on realistic scenario)
@@ -187,12 +187,12 @@ const INTERCONTINENTAL_PLAYOFF_TEAMS = [
 
 // Placeholder for playoff winners (will be replaced by simulation results)
 const PLAYOFF_TEAMS = [
-    { name: 'UEFA Playoff Winner 1', confederation: 'UEFA', points: 0, qualified: false, placeholder: true, flag: '🏳️' },
-    { name: 'UEFA Playoff Winner 2', confederation: 'UEFA', points: 0, qualified: false, placeholder: true, flag: '🏳️' },
-    { name: 'UEFA Playoff Winner 3', confederation: 'UEFA', points: 0, qualified: false, placeholder: true, flag: '🏳️' },
-    { name: 'UEFA Playoff Winner 4', confederation: 'UEFA', points: 0, qualified: false, placeholder: true, flag: '🏳️' },
-    { name: 'Inter-confederation Playoff Winner 1', confederation: 'PLAYOFF', points: 0, qualified: false, placeholder: true, flag: '🏳️' },
-    { name: 'Inter-confederation Playoff Winner 2', confederation: 'PLAYOFF', points: 0, qualified: false, placeholder: true, flag: '🏳️' }
+    { name: 'UEFA Playoff Winner 1', confederation: 'UEFA', points: 'TBD', qualified: false, placeholder: true, flag: '🇪🇺', description: 'From Path A/B/C/D' },
+    { name: 'UEFA Playoff Winner 2', confederation: 'UEFA', points: 'TBD', qualified: false, placeholder: true, flag: '🇪🇺', description: 'From Path A/B/C/D' },
+    { name: 'UEFA Playoff Winner 3', confederation: 'UEFA', points: 'TBD', qualified: false, placeholder: true, flag: '🇪🇺', description: 'From Path A/B/C/D' },
+    { name: 'UEFA Playoff Winner 4', confederation: 'UEFA', points: 'TBD', qualified: false, placeholder: true, flag: '🇪🇺', description: 'From Path A/B/C/D' },
+    { name: 'Inter-confederation Winner 1', confederation: 'PLAYOFF', points: 'TBD', qualified: false, placeholder: true, flag: '🌍', description: 'From 6-team playoff' },
+    { name: 'Inter-confederation Winner 2', confederation: 'PLAYOFF', points: 'TBD', qualified: false, placeholder: true, flag: '🌍', description: 'From 6-team playoff' }
 ];
 
 // Match venues and schedule data

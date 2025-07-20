@@ -87,8 +87,9 @@ Senegal (CAF), Venezuela (CONMEBOL), UAE (AFC), Honduras (CONCACAF), Curaçao (C
 ## 🎮 How to Use
 
 ### Getting Started
-1. **Open `index.html`** in a web browser
-2. **Click "Simulate Complete Draw"** for the full experience
+1. **Visit the Live Simulator**: https://rahulgh-stack.github.io/world_cup_group_visualization/
+2. **Or Open `index.html`** locally in a web browser
+3. **Click "Simulate Complete Draw"** for the full experience
 
 ### What Happens
 1. **March 2026 Playoffs Simulated** using FIFA ranking probabilities
@@ -232,5 +233,7 @@ This is an educational simulation for entertainment purposes. Official FIFA Worl
 ---
 
 **🏆 Experience the excitement of FIFA World Cup 2026 with the most realistic draw simulator available!**
+
+**🌐 Try it now**: https://rahulgh-stack.github.io/world_cup_group_visualization/
 
 *Ready to see which teams make it through the playoffs and how the groups shape up? Click "Simulate Complete Draw" and find out!*
