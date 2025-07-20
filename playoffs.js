@@ -2,6 +2,17 @@ class PlayoffSimulator {
     constructor() {
         this.uefaWinners = [];
         this.intercontinentalWinners = [];
+        this.logger = null;
+    }
+    
+    setLogger(loggerFunction) {
+        this.logger = loggerFunction;
+    }
+    
+    log(message, type = 'normal') {
+        if (this.logger) {
+            this.logger(message, type);
+        }
     }
 
     // Calculate win probability based on FIFA rankings
@@ -48,7 +59,7 @@ class PlayoffSimulator {
 
     // Simulate UEFA playoffs with exact realistic brackets (4 paths, 4 winners)
     simulateUEFAPlayoffs() {
-        console.log('🏆 Simulating UEFA Playoffs with Realistic Brackets...');
+        this.log('🇪🇺 UEFA Playoffs - 16 teams competing for 4 spots', 'pot-start');
         
         // Final realistic playoff paths with proper seeding
         const playoffPaths = {
@@ -105,8 +116,7 @@ class PlayoffSimulator {
         const results = [];
         
         Object.entries(playoffPaths).forEach(([pathLetter, pathData]) => {
-            console.log(`\n🔥 UEFA Playoff Path ${pathLetter}:`);
-            console.log(`  Teams: ${pathData.teams.map(t => t.name).join(', ')}`);
+            this.log(`🔥 UEFA Path ${pathLetter}: ${pathData.teams.map(t => t.name).join(', ')}`, 'pot-start');
             
             // Simulate semi-finals with exact matchups
             const semi1Team1 = pathData.teams.find(t => t.name === pathData.semis[0].home);
@@ -117,12 +127,12 @@ class PlayoffSimulator {
             const semi1 = this.simulateMatch(semi1Team1, semi1Team2);
             const semi2 = this.simulateMatch(semi2Team1, semi2Team2);
             
-            console.log(`  Semi 1: ${semi1.result}`);
-            console.log(`  Semi 2: ${semi2.result}`);
+            this.log(`   SF1: ${semi1.result}`, 'team-drawn');
+            this.log(`   SF2: ${semi2.result}`, 'team-drawn');
             
             // Final: Winners of semi-finals
             const final = this.simulateMatch(semi1.winner, semi2.winner);
-            console.log(`  Final: ${final.result}`);
+            this.log(`   Final: ${final.result}`, 'success');
             
             const pathWinner = {
                 ...final.winner,
@@ -131,6 +141,7 @@ class PlayoffSimulator {
             };
             
             this.uefaWinners.push(pathWinner);
+            this.log(`   🏆 ${pathWinner.name} qualifies for World Cup!`, 'success');
             
             results.push({
                 path: pathLetter,
@@ -141,21 +152,18 @@ class PlayoffSimulator {
             });
         });
         
-        console.log(`UEFA Playoff Winners: ${this.uefaWinners.map(w => w.name).join(', ')}`);
+        this.log(`✅ UEFA Playoff Winners: ${this.uefaWinners.map(w => w.name).join(', ')}`, 'validation');
         return results;
     }
 
     // Simulate inter-confederation playoffs with exact realistic brackets
     simulateIntercontinentalPlayoffs() {
-        console.log('\n🌍 Simulating Inter-confederation Playoffs with Realistic Brackets...');
+        this.log('🌍 Inter-confederation Playoffs - 6 teams competing for 2 spots', 'pot-start');
         
         // Exact teams from realistic qualification scenario
         const playoffTeams = [...INTERCONTINENTAL_PLAYOFF_TEAMS];
         
-        console.log('Playoff participants:');
-        playoffTeams.forEach(team => {
-            console.log(`  ${team.name} (${team.confederation}) - ${team.playoffSlot}`);
-        });
+        this.log(`Participants: ${playoffTeams.map(t => `${t.name} (${t.confederation})`).join(', ')}`, 'normal');
         
         // Exact bracket structure from realistic scenario
         // BRACKET 1: Honduras vs New Caledonia, winner vs Senegal
@@ -169,24 +177,24 @@ class PlayoffSimulator {
         const newCaledonia = playoffTeams.find(t => t.name === 'New Caledonia');
         
         // Bracket 1: Honduras vs New Caledonia
-        console.log(`\nBracket 1 - Semi-final:`);
+        this.log('🔥 Bracket 1 - Semi-final:', 'pot-start');
         const bracket1Semi = this.simulateMatch(honduras, newCaledonia);
-        console.log(`  ${bracket1Semi.result}`);
+        this.log(`   ${bracket1Semi.result}`, 'team-drawn');
         
         // Bracket 1 Final: Winner vs Senegal (seeded)
-        console.log(`\nBracket 1 - Final:`);
+        this.log('🔥 Bracket 1 - Final:', 'pot-start');
         const bracket1Final = this.simulateMatch(senegal, bracket1Semi.winner);
-        console.log(`  ${bracket1Final.result} (advances to World Cup)`);
+        this.log(`   ${bracket1Final.result}`, 'success');
         
         // Bracket 2: UAE vs Curaçao
-        console.log(`\nBracket 2 - Semi-final:`);
+        this.log('🔥 Bracket 2 - Semi-final:', 'pot-start');
         const bracket2Semi = this.simulateMatch(uae, curacao);
-        console.log(`  ${bracket2Semi.result}`);
+        this.log(`   ${bracket2Semi.result}`, 'team-drawn');
         
         // Bracket 2 Final: Winner vs Venezuela (seeded)
-        console.log(`\nBracket 2 - Final:`);
+        this.log('🔥 Bracket 2 - Final:', 'pot-start');
         const bracket2Final = this.simulateMatch(venezuela, bracket2Semi.winner);
-        console.log(`  ${bracket2Final.result} (advances to World Cup)`);
+        this.log(`   ${bracket2Final.result}`, 'success');
         
         // Both bracket winners qualify for World Cup
         const winner1 = {
@@ -203,9 +211,9 @@ class PlayoffSimulator {
         
         this.intercontinentalWinners = [winner1, winner2];
         
-        console.log(`\n✅ Inter-confederation Playoff Winners:`);
-        console.log(`  ${winner1.name} (${winner1.confederation})`);
-        console.log(`  ${winner2.name} (${winner2.confederation})`);
+        this.log(`🏆 ${winner1.name} qualifies for World Cup!`, 'success');
+        this.log(`🏆 ${winner2.name} qualifies for World Cup!`, 'success');
+        this.log(`✅ Inter-confederation Winners: ${winner1.name}, ${winner2.name}`, 'validation');
         
         return {
             participants: playoffTeams,
@@ -225,8 +233,6 @@ class PlayoffSimulator {
 
     // Simulate all playoffs and return combined results
     simulateAllPlayoffs() {
-        console.log('🚀 Starting Playoff Simulations...\n');
-        
         // Reset winners arrays
         this.uefaWinners = [];
         this.intercontinentalWinners = [];
@@ -240,10 +246,12 @@ class PlayoffSimulator {
             ...this.intercontinentalWinners
         ];
         
-        console.log('\n🎉 All Playoff Winners:');
+        this.log('🎉 All 6 Playoff Winners Determined:', 'validation');
         allPlayoffWinners.forEach((winner, index) => {
-            console.log(`  ${index + 1}. ${winner.name} (${winner.confederation}) - ${winner.points} pts`);
+            this.log(`   ${index + 1}. ${winner.name} (${winner.confederation}) - ${winner.points} pts`, 'success');
         });
+        
+        this.log('📋 Playoff phase complete - proceeding to World Cup draw...', 'validation');
         
         return {
             uefa: uefaResults,

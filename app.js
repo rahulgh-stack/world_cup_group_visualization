@@ -218,6 +218,9 @@ class WorldCupApp {
             // Update pots with actual playoff winners (ranked by their FIFA points)
             this.displayPots();
             
+            // Show initial playoff log
+            this.displaySimulationLog();
+            
             // Show loading for draw
             drawButton.innerHTML = '<span class="loading"></span> Drawing Groups...';
             
@@ -229,6 +232,7 @@ class WorldCupApp {
                 
                 this.displayGroups();
                 this.displayMatches();
+                this.displaySimulationLog();
                 
                 drawButton.textContent = 'New Complete Draw';
                 drawButton.disabled = false;
@@ -642,6 +646,31 @@ class WorldCupApp {
         matchesContainer.appendChild(calendarContainer);
     }
 
+    displaySimulationLog() {
+        const logSection = document.getElementById('simulationLogSection');
+        const logContainer = document.getElementById('simulationLog');
+        
+        // Show the log section
+        logSection.style.display = 'block';
+        
+        // Get the simulation log from the simulator
+        const logEntries = this.simulator.getSimulationLog();
+        
+        logContainer.innerHTML = '';
+        
+        logEntries.forEach(entry => {
+            const logDiv = document.createElement('div');
+            logDiv.className = `log-entry ${entry.type}`;
+            logDiv.textContent = `${entry.timestamp} - ${entry.message}`;
+            logContainer.appendChild(logDiv);
+        });
+        
+        // Initially collapse the log
+        logContainer.classList.add('collapsed');
+        const toggleButton = document.getElementById('toggleLog');
+        toggleButton.innerHTML = '<span id="logToggleIcon">▼</span> Show Log';
+    }
+
     // Utility function to get confederation color
     getConfederationColor(confederation) {
         const colors = {
@@ -671,6 +700,40 @@ function togglePlayoffDetails() {
         container.classList.add('collapsed');
         toggleIcon.textContent = '▼';
         toggleButton.innerHTML = '<span id="toggleIcon">▼</span> Show Details';
+    }
+}
+
+// Toggle function for simulation log
+function toggleSimulationLog() {
+    const container = document.getElementById('simulationLog');
+    const toggleIcon = document.getElementById('logToggleIcon');
+    const toggleButton = document.getElementById('toggleLog');
+    
+    if (container.classList.contains('collapsed')) {
+        container.classList.remove('collapsed');
+        toggleIcon.textContent = '▲';
+        toggleButton.innerHTML = '<span id="logToggleIcon">▲</span> Hide Log';
+    } else {
+        container.classList.add('collapsed');
+        toggleIcon.textContent = '▼';
+        toggleButton.innerHTML = '<span id="logToggleIcon">▼</span> Show Log';
+    }
+}
+
+// Toggle function for pots display
+function togglePotsDisplay() {
+    const container = document.getElementById('potsContainer');
+    const toggleIcon = document.getElementById('potsToggleIcon');
+    const toggleButton = document.getElementById('togglePots');
+    
+    if (container.classList.contains('hidden')) {
+        container.classList.remove('hidden');
+        toggleIcon.textContent = '▲';
+        toggleButton.innerHTML = '<span id="potsToggleIcon">▲</span> Hide Pots';
+    } else {
+        container.classList.add('hidden');
+        toggleIcon.textContent = '▼';
+        toggleButton.innerHTML = '<span id="potsToggleIcon">▼</span> Show Pots';
     }
 }
 

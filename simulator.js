@@ -5,6 +5,7 @@ class WorldCupDrawSimulator {
         this.allTeams = [];
         this.playoffSimulator = new PlayoffSimulator();
         this.playoffResults = null;
+        this.simulationLog = [];
         this.initializeTeams();
     }
 
@@ -46,16 +47,22 @@ class WorldCupDrawSimulator {
 
     // Simulate playoffs first, then create final team list
     simulatePlayoffs() {
-        console.log('🎲 Simulating March 2026 Playoffs...');
+        this.simulationLog = [];
+        this.logEntry('🏆 Starting March 2026 Playoff Simulations', 'pot-start');
+        
+        // Pass logging function to playoff simulator
+        this.playoffSimulator.setLogger((message, type) => this.logEntry(message, type));
         this.playoffResults = this.playoffSimulator.simulateAllPlayoffs();
         
         console.log('🔄 Playoff results received:', this.playoffResults.allWinners.map(w => `${w.name} (${w.points})`));
         
         // Recreate teams list with actual playoff winners
+        this.logEntry('🔄 Updating team list with playoff winners...', 'validation');
         this.allTeams = this.createFullTeamsList();
-        console.log('🔄 Updated team list size:', this.allTeams.length);
-        console.log('🔄 Playoff winners in team list:', this.allTeams.filter(t => t.playoffWinner).map(t => t.name));
+        this.logEntry(`📊 Final team count: ${this.allTeams.length} teams`, 'success');
+        this.logEntry(`🏆 Playoff winners added: ${this.allTeams.filter(t => t.playoffWinner).map(t => t.name).join(', ')}`, 'success');
         
+        this.logEntry('📋 Creating pots based on FIFA rankings...', 'validation');
         this.createPots();
         this.testEdgeCases();
         
@@ -114,21 +121,18 @@ class WorldCupDrawSimulator {
     }
     
     createPots() {
-        console.log('Creating pots based on FIFA rankings...');
-        
         // Get all teams (including playoff winners) and sort by FIFA ranking points
         const allRankedTeams = this.allTeams
             .filter(team => !team.placeholder) // Remove any remaining placeholders
             .sort((a, b) => b.points - a.points);
         
-        console.log('Total teams for pots:', allRankedTeams.length);
+        this.logEntry(`📊 Sorting ${allRankedTeams.length} teams by FIFA rankings`, 'normal');
         
         // Pot 1: 3 hosts + 9 best teams by ranking
         const hosts = allRankedTeams.filter(team => team.host);
         const nonHostRanked = allRankedTeams.filter(team => !team.host);
         
-        console.log('Hosts:', hosts.map(t => t.name));
-        console.log('Top non-host teams:', nonHostRanked.slice(0, 10).map(t => `${t.name} (${t.points})`));
+        this.logEntry(`🏠 Host nations (pre-assigned to Pot 1): ${hosts.map(t => t.name).join(', ')}`, 'team-drawn');
         
         // Distribute teams into pots based purely on FIFA rankings
         this.pots[1] = [...hosts, ...nonHostRanked.slice(0, 9)]; // 3 hosts + 9 best
@@ -136,17 +140,37 @@ class WorldCupDrawSimulator {
         this.pots[3] = nonHostRanked.slice(21, 33); // Next 12 teams  
         this.pots[4] = nonHostRanked.slice(33, 45); // Final 12 teams
         
-        console.log('Pot sizes:', 
-            'Pot 1:', this.pots[1].length,
-            'Pot 2:', this.pots[2].length, 
-            'Pot 3:', this.pots[3].length,
-            'Pot 4:', this.pots[4].length
-        );
+        // Log each pot with key teams
+        for (let pot = 1; pot <= 4; pot++) {
+            const potTeams = this.pots[pot];
+            const playoffWinners = potTeams.filter(t => t.playoffWinner);
+            const regularTeams = potTeams.filter(t => !t.playoffWinner && !t.host);
+            
+            let potDescription = `🎱 Pot ${pot} (${potTeams.length} teams):`;
+            if (pot === 1 && hosts.length > 0) {
+                potDescription += ` 3 hosts + ${regularTeams.length} best ranked`;
+            } else {
+                const topPoints = potTeams[0]?.points || 0;
+                const bottomPoints = potTeams[potTeams.length - 1]?.points || 0;
+                potDescription += ` FIFA rankings ${topPoints}-${bottomPoints} pts`;
+            }
+            
+            this.logEntry(potDescription, 'pot-start');
+            
+            // Show playoff winners in this pot
+            if (playoffWinners.length > 0) {
+                this.logEntry(`   🏆 Playoff winners: ${playoffWinners.map(t => `${t.name} (${t.playoffPath || 'Playoff Winner'})`).join(', ')}`, 'success');
+            }
+            
+            // Show top teams in this pot
+            const sampleTeams = potTeams.slice(0, 6);
+            this.logEntry(`   Top teams: ${sampleTeams.map(t => `${t.name}${t.host ? ' (Host)' : ''}${t.playoffWinner ? '*' : ''}`).join(', ')}${potTeams.length > 6 ? '...' : ''}`, 'team-drawn');
+        }
         
-        // Log playoff winners and their pot placements
+        // Summary of playoff winners placement
         const playoffWinnersInPots = this.allTeams.filter(t => t.playoffWinner);
         if (playoffWinnersInPots.length > 0) {
-            console.log('\n🏆 Playoff Winners in Pots:');
+            this.logEntry('🏆 Playoff Winners Final Pot Assignments:', 'validation');
             playoffWinnersInPots.forEach(winner => {
                 let potNumber = 'Not Found';
                 if (this.pots[1].find(t => t.name === winner.name)) potNumber = 1;
@@ -154,20 +178,15 @@ class WorldCupDrawSimulator {
                 else if (this.pots[3].find(t => t.name === winner.name)) potNumber = 3;
                 else if (this.pots[4].find(t => t.name === winner.name)) potNumber = 4;
                 
-                console.log(`  ${winner.name} (${winner.points} pts) → Pot ${potNumber}`);
+                this.logEntry(`   ${winner.name} (${winner.points} pts) → Pot ${potNumber}`, 'success');
             });
-        } else {
-            console.log('🚨 No playoff winners found in team list!');
-        }
-        
-        // Log first few teams in each pot
-        console.log('\n📋 Pot Contents:');
-        for (let pot = 1; pot <= 4; pot++) {
-            console.log(`Pot ${pot}: ${this.pots[pot].slice(0, 5).map(t => `${t.name}${t.playoffWinner ? '*' : ''}`).join(', ')}...`);
         }
     }
 
     simulateDraw() {
+        // Don't reset log - keep playoff information
+        this.logEntry('🎲 Starting FIFA World Cup 2026 Group Stage Draw', 'pot-start');
+        
         this.groups = {};
         // Initialize groups A-L
         for (let i = 0; i < 12; i++) {
@@ -175,10 +194,16 @@ class WorldCupDrawSimulator {
             this.groups[groupLetter] = [];
         }
 
+        this.logEntry('📋 Initialized 12 groups (A-L)', 'success');
+
         // Pre-assign hosts
+        this.logEntry('🏠 Pre-assigning host nations...', 'pot-start');
         this.groups['A'].push(this.pots[1].find(team => team.name === 'Mexico'));
+        this.logEntry('   Mexico → Group A (Host)', 'team-drawn');
         this.groups['B'].push(this.pots[1].find(team => team.name === 'Canada'));
+        this.logEntry('   Canada → Group B (Host)', 'team-drawn');
         this.groups['D'].push(this.pots[1].find(team => team.name === 'United States'));
+        this.logEntry('   United States → Group D (Host)', 'team-drawn');
 
         // Draw remaining Pot 1 teams using FIFA procedure  
         const remainingPot1 = this.pots[1].filter(team => 
@@ -186,8 +211,10 @@ class WorldCupDrawSimulator {
         );
         const availableGroups = ['C', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
         
+        this.logEntry(`🎯 Drawing remaining Pot 1 teams (${remainingPot1.length} teams for ${availableGroups.length} groups)`, 'pot-start');
+        
         if (remainingPot1.length !== availableGroups.length) {
-            console.error(`❌ CRITICAL: Pot 1 has ${remainingPot1.length} remaining teams but ${availableGroups.length} available groups`);
+            this.logEntry(`❌ CRITICAL: Pot 1 has ${remainingPot1.length} remaining teams but ${availableGroups.length} available groups`, 'error');
         }
         
         // Shuffle both arrays to ensure randomness
@@ -197,7 +224,7 @@ class WorldCupDrawSimulator {
         // Assign one team to each group
         for (let i = 0; i < Math.min(availableGroups.length, remainingPot1.length); i++) {
             this.groups[availableGroups[i]].push(remainingPot1[i]);
-            console.log(`🎯 Group ${availableGroups[i]}: ${remainingPot1[i].name} (Pot 1)`);
+            this.logEntry(`   ${remainingPot1[i].name} → Group ${availableGroups[i]}`, 'team-drawn');
         }
 
         // Draw Pots 2, 3, and 4
@@ -212,28 +239,29 @@ class WorldCupDrawSimulator {
     }
     
     validateAndFixDraw() {
-        console.log('\n🔍 FINAL VALIDATION: Checking all groups have exactly 4 teams...');
+        this.logEntry('🔍 FINAL VALIDATION: Checking all groups have exactly 4 teams...', 'validation');
         
         const incompleteGroups = Object.keys(this.groups).filter(g => this.groups[g].length !== 4);
         
         if (incompleteGroups.length > 0) {
-            console.error(`❌ CRITICAL: ${incompleteGroups.length} groups don't have 4 teams`);
+            this.logEntry(`❌ CRITICAL: ${incompleteGroups.length} groups don't have 4 teams`, 'error');
             incompleteGroups.forEach(g => {
-                console.error(`  Group ${g}: ${this.groups[g].length} teams`);
+                this.logEntry(`     Group ${g}: ${this.groups[g].length} teams`, 'error');
             });
             
             // EMERGENCY FIX: Balance the groups
+            this.logEntry('🚨 Starting emergency group balancing...', 'error');
             this.emergencyBalanceGroups();
             
             // Re-validate
             const stillIncomplete = Object.keys(this.groups).filter(g => this.groups[g].length !== 4);
             if (stillIncomplete.length > 0) {
-                console.error(`❌ EMERGENCY FIX FAILED: ${stillIncomplete.length} groups still incomplete`);
+                this.logEntry(`❌ EMERGENCY FIX FAILED: ${stillIncomplete.length} groups still incomplete`, 'error');
             } else {
-                console.warn(`⚠️ EMERGENCY FIX SUCCESS: All groups now have 4 teams`);
+                this.logEntry(`⚠️ EMERGENCY FIX SUCCESS: All groups now have 4 teams`, 'success');
             }
         } else {
-            console.log(`✅ VALIDATION PASSED: All 12 groups have exactly 4 teams`);
+            this.logEntry(`✅ VALIDATION PASSED: All 12 groups have exactly 4 teams`, 'success');
         }
         
         // Final summary
@@ -274,21 +302,21 @@ class WorldCupDrawSimulator {
     }
 
     drawPot(potNumber) {
-        console.log(`🎱 Drawing Pot ${potNumber} - FIFA Style...`);
+        this.logEntry(`🎱 Drawing Pot ${potNumber} (${this.pots[potNumber].length} teams)`, 'pot-start');
         const availableTeams = [...this.pots[potNumber]];
         
         // CRITICAL: Ensure every group gets exactly 1 team from this pot
         const incompleteGroups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
             .filter(groupLetter => this.groups[groupLetter].length < potNumber);
         
-        console.log(`📊 Pot ${potNumber}: ${availableTeams.length} teams for ${incompleteGroups.length} groups`);
+        this.logEntry(`📊 Teams to place: ${availableTeams.length}, Groups available: ${incompleteGroups.length}`, 'normal');
         
         // Validate we have the right number of teams
         if (availableTeams.length !== incompleteGroups.length) {
-            console.error(`❌ POT SIZE MISMATCH: Pot ${potNumber} has ${availableTeams.length} teams but ${incompleteGroups.length} groups need teams`);
+            this.logEntry(`❌ POT SIZE MISMATCH: Pot ${potNumber} has ${availableTeams.length} teams but ${incompleteGroups.length} groups need teams`, 'error');
             
             if (availableTeams.length < incompleteGroups.length) {
-                console.error(`❌ NOT ENOUGH TEAMS: Missing ${incompleteGroups.length - availableTeams.length} teams for complete groups`);
+                this.logEntry(`❌ NOT ENOUGH TEAMS: Missing ${incompleteGroups.length - availableTeams.length} teams for complete groups`, 'error');
             }
         }
         
@@ -315,7 +343,7 @@ class WorldCupDrawSimulator {
         // Execute placements
         placements.forEach(placement => {
             this.groups[placement.group].push(placement.team);
-            console.log(`🎯 Group ${placement.group}: ${placement.team.name} (${placement.team.confederation}) from Pot ${potNumber}`);
+            this.logEntry(`   ${placement.team.name} (${placement.team.confederation}) → Group ${placement.group}`, 'team-drawn');
         });
         
         // Final validation for this pot
@@ -323,12 +351,12 @@ class WorldCupDrawSimulator {
             .filter(groupLetter => this.groups[groupLetter].length !== potNumber);
         
         if (finalIncompleteGroups.length > 0) {
-            console.error(`❌ POST-POT VALIDATION FAILED: ${finalIncompleteGroups.length} groups don't have ${potNumber} teams`);
+            this.logEntry(`❌ POST-POT VALIDATION FAILED: ${finalIncompleteGroups.length} groups don't have ${potNumber} teams`, 'error');
             finalIncompleteGroups.forEach(g => {
-                console.error(`  Group ${g}: ${this.groups[g].length} teams (should be ${potNumber})`);
+                this.logEntry(`     Group ${g}: ${this.groups[g].length} teams (should be ${potNumber})`, 'error');
             });
         } else {
-            console.log(`✅ Pot ${potNumber} complete: All groups have exactly ${potNumber} teams`);
+            this.logEntry(`✅ Pot ${potNumber} complete: All groups have exactly ${potNumber} teams`, 'success');
         }
     }
     
@@ -501,6 +529,14 @@ class WorldCupDrawSimulator {
 
     getPots() {
         return this.pots;
+    }
+    
+    logEntry(message, type = 'normal') {
+        this.simulationLog.push({ message, type, timestamp: new Date().toLocaleTimeString() });
+    }
+    
+    getSimulationLog() {
+        return this.simulationLog;
     }
 
     getGroups() {

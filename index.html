@@ -41,7 +41,12 @@
         </div>
         
         <div class="pots-section">
-            <h3>Pots</h3>
+            <div class="pots-header">
+                <h3>Pots</h3>
+                <button class="toggle-pots" id="togglePots" onclick="togglePotsDisplay()">
+                    <span id="potsToggleIcon">▲</span> Hide Pots
+                </button>
+            </div>
             <div class="pots-container" id="potsContainer">
                 <!-- Pots will be generated here -->
             </div>
@@ -51,6 +56,18 @@
             <h3>Groups</h3>
             <div class="groups-container" id="groupsContainer">
                 <!-- Groups will be generated here -->
+            </div>
+        </div>
+        
+        <div class="simulation-log-section" id="simulationLogSection" style="display: none;">
+            <div class="log-header">
+                <h3>Draw Simulation Log</h3>
+                <button class="toggle-log" id="toggleLog" onclick="toggleSimulationLog()">
+                    <span id="logToggleIcon">▼</span> Show Log
+                </button>
+            </div>
+            <div class="simulation-log collapsed" id="simulationLog">
+                <!-- Simulation log will be generated here -->
             </div>
         </div>
         
