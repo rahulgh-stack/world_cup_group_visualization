@@ -16,6 +16,7 @@ This simulator recreates the complete FIFA World Cup 2026 qualification and draw
 
 - ✅ **42 Direct Qualified Teams** from realistic qualification scenarios
 - ✅ **Playoff Simulations** with FIFA ranking-based probabilities  
+- ✅ **Authentic Random Draw** - teams and groups selected randomly like real FIFA draws
 - ✅ **Complete Group Draw** with proper FIFA rules and confederation restrictions
 - ✅ **Official Match Schedule** with exact venues, dates, and match numbers
 - ✅ **Interactive Visualization** showing pots, groups, and playoff results
@@ -94,8 +95,11 @@ Senegal (CAF), Venezuela (CONMEBOL), UAE (AFC), Honduras (CONCACAF), Curaçao (C
 ### What Happens
 1. **March 2026 Playoffs Simulated** using FIFA ranking probabilities
 2. **Playoff Winners Integrated** into the 48-team field
-3. **Pots Created** based on FIFA rankings (playoff winners highlighted in red)
-4. **Groups Drawn** following FIFA confederation rules
+3. **Pots Created** based on FIFA rankings (playoff winners automatically in Pot 4)
+4. **Authentic Draw Process**:
+   - Hosts pre-assigned: Mexico→A, Canada→B, USA→D
+   - Remaining Pot 1 teams drawn randomly into available groups
+   - Pots 2-4: Each team drawn randomly, checking confederation constraints
 5. **Match Schedule Generated** with official venues and dates
 
 ## 🏟️ Official FIFA 2026 Venues
@@ -133,10 +137,10 @@ Senegal (CAF), Venezuela (CONMEBOL), UAE (AFC), Honduras (CONCACAF), Curaçao (C
 - **🌊 OFC**: Maximum 1 team per group (1 team)
 
 ### Pot Structure
-- **Pot 1**: 3 hosts + 9 best teams by FIFA ranking
-- **Pot 2**: Next 12 teams by ranking
-- **Pot 3**: Next 12 teams by ranking
-- **Pot 4**: Final 12 teams by ranking
+- **Pot 1**: 3 hosts + 9 best qualified teams by FIFA ranking
+- **Pot 2**: Next 12 qualified teams by ranking
+- **Pot 3**: Next 12 qualified teams by ranking  
+- **Pot 4**: Remaining qualified teams + ALL playoff winners (FIFA rule)
 
 ## 🎲 Probability System
 
@@ -178,6 +182,12 @@ Senegal (CAF), Venezuela (CONMEBOL), UAE (AFC), Honduras (CONCACAF), Curaçao (C
 
 ## 🚀 Technical Details
 
+### Draw Algorithm Authenticity
+- **Random Team Selection**: Teams shuffled and drawn one by one from each pot
+- **Random Group Assignment**: Each team randomly assigned to eligible groups
+- **Real-time Constraint Checking**: Confederation limits enforced during draw
+- **FIFA-Compliant Process**: Mirrors actual World Cup draw procedure
+
 ### Data Accuracy
 - **Current FIFA Rankings**: Latest official rankings
 - **Realistic Qualification**: Based on actual group standings
@@ -205,6 +215,12 @@ Edit `data.js`:
 Edit `playoffs.js`:
 - Change the `scaleFactor` in `calculateWinProbability()`
 - Modify probability ranges for more/fewer upsets
+
+### Modify Draw Algorithm
+Edit `simulator.js`:
+- Adjust randomization in `shuffleArray()` function
+- Modify constraint checking in `canAddTeamToGroup()`
+- Change draw sequence in `drawPot()` method
 
 ### Visual Customization
 Edit `style.css`:

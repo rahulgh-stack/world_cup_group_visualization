@@ -45,7 +45,7 @@ class WorldCupDrawSimulator {
         return finalTeams;
     }
 
-    // Simulate playoffs first, then create final team list
+    // Simulate playoffs (March 2026)
     simulatePlayoffs() {
         this.simulationLog = [];
         this.logEntry('🏆 Starting March 2026 Playoff Simulations', 'pot-start');
@@ -121,70 +121,80 @@ class WorldCupDrawSimulator {
     }
     
     createPots() {
-        // Get all teams (including playoff winners) and sort by FIFA ranking points
-        const allRankedTeams = this.allTeams
-            .filter(team => !team.placeholder) // Remove any remaining placeholders
+        // Separate playoff winners from other teams - playoff winners ALWAYS go to Pot 4
+        const playoffWinners = this.allTeams.filter(team => team.playoffWinner && !team.placeholder);
+        const qualifiedTeams = this.allTeams
+            .filter(team => !team.placeholder && !team.playoffWinner) // Exclude playoff winners
             .sort((a, b) => b.points - a.points);
         
-        this.logEntry(`📊 Sorting ${allRankedTeams.length} teams by FIFA rankings`, 'normal');
+        this.logEntry(`📊 FIFA Rule: ${playoffWinners.length} playoff winners → Pot 4, ${qualifiedTeams.length} qualified teams by rankings`, 'validation');
+        this.logEntry(`🏆 Playoff winners (auto-assigned to Pot 4): ${playoffWinners.map(t => t.name).join(', ')}`, 'constraint');
         
-        // Pot 1: 3 hosts + 9 best teams by ranking
-        const hosts = allRankedTeams.filter(team => team.host);
-        const nonHostRanked = allRankedTeams.filter(team => !team.host);
+        // Pot 1: 3 hosts + 9 best qualified teams by ranking
+        const hosts = qualifiedTeams.filter(team => team.host);
+        const nonHostRanked = qualifiedTeams.filter(team => !team.host);
         
         this.logEntry(`🏠 Host nations (pre-assigned to Pot 1): ${hosts.map(t => t.name).join(', ')}`, 'team-drawn');
         
-        // Distribute teams into pots based purely on FIFA rankings
+        // Calculate how many spots are left for qualified teams in Pot 4
+        const pot4SpotsForQualified = 12 - playoffWinners.length;
+        this.logEntry(`📊 Pot 4 distribution: ${playoffWinners.length} playoff winners + ${pot4SpotsForQualified} lowest-ranked qualified teams`, 'normal');
+        
+        // Distribute qualified teams into pots based purely on FIFA rankings
         this.pots[1] = [...hosts, ...nonHostRanked.slice(0, 9)]; // 3 hosts + 9 best
         this.pots[2] = nonHostRanked.slice(9, 21);  // Next 12 teams
         this.pots[3] = nonHostRanked.slice(21, 33); // Next 12 teams  
-        this.pots[4] = nonHostRanked.slice(33, 45); // Final 12 teams
+        this.pots[4] = [...playoffWinners, ...nonHostRanked.slice(33, 33 + pot4SpotsForQualified)]; // Playoff winners + remaining qualified teams
         
         // Log each pot with key teams
         for (let pot = 1; pot <= 4; pot++) {
             const potTeams = this.pots[pot];
-            const playoffWinners = potTeams.filter(t => t.playoffWinner);
-            const regularTeams = potTeams.filter(t => !t.playoffWinner && !t.host);
+            const potPlayoffWinners = potTeams.filter(t => t.playoffWinner);
+            const potHosts = potTeams.filter(t => t.host);
+            const potRegularTeams = potTeams.filter(t => !t.playoffWinner && !t.host);
             
             let potDescription = `🎱 Pot ${pot} (${potTeams.length} teams):`;
-            if (pot === 1 && hosts.length > 0) {
-                potDescription += ` 3 hosts + ${regularTeams.length} best ranked`;
+            if (pot === 1) {
+                potDescription += ` 3 hosts + 9 best ranked qualified teams`;
+            } else if (pot === 4) {
+                potDescription += ` ${potPlayoffWinners.length} playoff winners + ${potRegularTeams.length} lowest-ranked qualified teams`;
             } else {
-                const topPoints = potTeams[0]?.points || 0;
-                const bottomPoints = potTeams[potTeams.length - 1]?.points || 0;
+                const topPoints = potRegularTeams[0]?.points || 0;
+                const bottomPoints = potRegularTeams[potRegularTeams.length - 1]?.points || 0;
                 potDescription += ` FIFA rankings ${topPoints}-${bottomPoints} pts`;
             }
             
             this.logEntry(potDescription, 'pot-start');
             
-            // Show playoff winners in this pot
-            if (playoffWinners.length > 0) {
-                this.logEntry(`   🏆 Playoff winners: ${playoffWinners.map(t => `${t.name} (${t.playoffPath || 'Playoff Winner'})`).join(', ')}`, 'success');
+            // Show playoff winners in this pot (should only be in Pot 4)
+            if (potPlayoffWinners.length > 0) {
+                if (pot === 4) {
+                    this.logEntry(`   🏆 ALL playoff winners (FIFA rule): ${potPlayoffWinners.map(t => `${t.name} (${t.playoffPath || 'Playoff Winner'})`).join(', ')}`, 'constraint');
+                } else {
+                    this.logEntry(`   ⚠️ ERROR: Playoff winners in wrong pot: ${potPlayoffWinners.map(t => t.name).join(', ')}`, 'error');
+                }
             }
             
-            // Show top teams in this pot
-            const sampleTeams = potTeams.slice(0, 6);
-            this.logEntry(`   Top teams: ${sampleTeams.map(t => `${t.name}${t.host ? ' (Host)' : ''}${t.playoffWinner ? '*' : ''}`).join(', ')}${potTeams.length > 6 ? '...' : ''}`, 'team-drawn');
+            // Show sample teams
+            if (pot === 4) {
+                // For Pot 4, show playoff winners separately from qualified teams
+                if (potRegularTeams.length > 0) {
+                    const sampleRegular = potRegularTeams.slice(0, 4);
+                    this.logEntry(`   Qualified teams: ${sampleRegular.map(t => t.name).join(', ')}${potRegularTeams.length > 4 ? '...' : ''}`, 'team-drawn');
+                }
+            } else {
+                const sampleTeams = potTeams.slice(0, 6);
+                this.logEntry(`   Teams: ${sampleTeams.map(t => `${t.name}${t.host ? ' (Host)' : ''}`).join(', ')}${potTeams.length > 6 ? '...' : ''}`, 'team-drawn');
+            }
         }
         
-        // Summary of playoff winners placement
-        const playoffWinnersInPots = this.allTeams.filter(t => t.playoffWinner);
-        if (playoffWinnersInPots.length > 0) {
-            this.logEntry('🏆 Playoff Winners Final Pot Assignments:', 'validation');
-            playoffWinnersInPots.forEach(winner => {
-                let potNumber = 'Not Found';
-                if (this.pots[1].find(t => t.name === winner.name)) potNumber = 1;
-                else if (this.pots[2].find(t => t.name === winner.name)) potNumber = 2;
-                else if (this.pots[3].find(t => t.name === winner.name)) potNumber = 3;
-                else if (this.pots[4].find(t => t.name === winner.name)) potNumber = 4;
-                
-                this.logEntry(`   ${winner.name} (${winner.points} pts) → Pot ${potNumber}`, 'success');
-            });
-        }
+        // Confirm FIFA rule compliance
+        this.logEntry('✅ FIFA Rule Compliance: All playoff winners assigned to Pot 4', 'validation');
     }
 
     simulateDraw() {
         // Don't reset log - keep playoff information
+        console.log('✅ simulateDraw method called successfully');
         this.logEntry('🎲 Starting FIFA World Cup 2026 Group Stage Draw', 'pot-start');
         
         this.groups = {};
@@ -205,7 +215,7 @@ class WorldCupDrawSimulator {
         this.groups['D'].push(this.pots[1].find(team => team.name === 'United States'));
         this.logEntry('   United States → Group D (Host)', 'team-drawn');
 
-        // Draw remaining Pot 1 teams using FIFA procedure  
+        // Draw remaining Pot 1 teams randomly like real FIFA draw
         const remainingPot1 = this.pots[1].filter(team => 
             !['Mexico', 'Canada', 'United States'].includes(team.name)
         );
@@ -217,15 +227,34 @@ class WorldCupDrawSimulator {
             this.logEntry(`❌ CRITICAL: Pot 1 has ${remainingPot1.length} remaining teams but ${availableGroups.length} available groups`, 'error');
         }
         
-        // Shuffle both arrays to ensure randomness
+        // Shuffle teams to make draw random
         this.shuffleArray(remainingPot1);
-        this.shuffleArray(availableGroups);
         
-        // Assign one team to each group
-        for (let i = 0; i < Math.min(availableGroups.length, remainingPot1.length); i++) {
-            this.groups[availableGroups[i]].push(remainingPot1[i]);
-            this.logEntry(`   ${remainingPot1[i].name} → Group ${availableGroups[i]}`, 'team-drawn');
-        }
+        // Draw each team randomly into available groups
+        remainingPot1.forEach(team => {
+            // Find groups that still need a Pot 1 team
+            const eligibleGroups = availableGroups.filter(groupLetter => 
+                this.groups[groupLetter].length === 0
+            );
+            
+            if (eligibleGroups.length === 0) {
+                this.logEntry(`❌ NO AVAILABLE GROUPS: ${team.name} cannot be placed`, 'error');
+                return;
+            }
+            
+            // Randomly select from available groups
+            this.shuffleArray(eligibleGroups);
+            const selectedGroup = eligibleGroups[0];
+            
+            this.groups[selectedGroup].push(team);
+            this.logEntry(`   ${team.name} → Group ${selectedGroup}`, 'team-drawn');
+            
+            // Remove group from available list
+            const groupIndex = availableGroups.indexOf(selectedGroup);
+            if (groupIndex > -1) {
+                availableGroups.splice(groupIndex, 1);
+            }
+        });
 
         // Draw Pots 2, 3, and 4
         for (let pot = 2; pot <= 4; pot++) {
@@ -305,46 +334,16 @@ class WorldCupDrawSimulator {
         this.logEntry(`🎱 Drawing Pot ${potNumber} (${this.pots[potNumber].length} teams)`, 'pot-start');
         const availableTeams = [...this.pots[potNumber]];
         
-        // CRITICAL: Ensure every group gets exactly 1 team from this pot
-        const incompleteGroups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
-            .filter(groupLetter => this.groups[groupLetter].length < potNumber);
+        this.logEntry(`📊 Teams to place: ${availableTeams.length} teams`, 'normal');
         
-        this.logEntry(`📊 Teams to place: ${availableTeams.length}, Groups available: ${incompleteGroups.length}`, 'normal');
+        // Try to place all teams with backtracking if needed
+        const success = this.drawPotWithBacktracking(availableTeams, potNumber);
         
-        // Validate we have the right number of teams
-        if (availableTeams.length !== incompleteGroups.length) {
-            this.logEntry(`❌ POT SIZE MISMATCH: Pot ${potNumber} has ${availableTeams.length} teams but ${incompleteGroups.length} groups need teams`, 'error');
-            
-            if (availableTeams.length < incompleteGroups.length) {
-                this.logEntry(`❌ NOT ENOUGH TEAMS: Missing ${incompleteGroups.length - availableTeams.length} teams for complete groups`, 'error');
-            }
+        if (!success) {
+            this.logEntry(`❌ CRITICAL: Could not place all teams from Pot ${potNumber} without violations`, 'error');
+            // Force place remaining teams (should not happen with good algorithm)
+            this.forceCompletePot(availableTeams, potNumber);
         }
-        
-        // Use constrained placement algorithm
-        const placements = this.solveConstrainedPlacement(availableTeams, incompleteGroups);
-        
-        // GUARANTEE: Every group must get exactly one team
-        if (placements.length !== incompleteGroups.length) {
-            console.error(`❌ CRITICAL FAILURE: Could only place ${placements.length}/${incompleteGroups.length} teams from Pot ${potNumber}`);
-            
-            // Emergency: Fill remaining groups with any available teams
-            const unfilledGroups = incompleteGroups.filter(g => !placements.find(p => p.group === g));
-            const unplacedTeams = availableTeams.filter(t => !placements.find(p => p.team === t));
-            
-            console.warn(`⚠️ EMERGENCY FILL: ${unfilledGroups.length} groups need emergency team placement`);
-            
-            for (let i = 0; i < Math.min(unfilledGroups.length, unplacedTeams.length); i++) {
-                const emergencyPlacement = { team: unplacedTeams[i], group: unfilledGroups[i] };
-                placements.push(emergencyPlacement);
-                console.warn(`⚠️ EMERGENCY: ${unplacedTeams[i].name} → Group ${unfilledGroups[i]} (constraint violation)`);
-            }
-        }
-        
-        // Execute placements
-        placements.forEach(placement => {
-            this.groups[placement.group].push(placement.team);
-            this.logEntry(`   ${placement.team.name} (${placement.team.confederation}) → Group ${placement.group}`, 'team-drawn');
-        });
         
         // Final validation for this pot
         const finalIncompleteGroups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
@@ -358,94 +357,114 @@ class WorldCupDrawSimulator {
         } else {
             this.logEntry(`✅ Pot ${potNumber} complete: All groups have exactly ${potNumber} teams`, 'success');
         }
+        
+        // CRITICAL: Validate confederation constraints for this pot
+        this.validateConfederationConstraints(potNumber);
     }
     
-    solveConstrainedPlacement(teams, groups) {
-        const placements = [];
-        const availableTeams = [...teams];
-        const availableGroups = [...groups];
-        
-        console.log(`🧪 Starting constrained placement: ${availableTeams.length} teams for ${availableGroups.length} groups`);
-        
-        // First pass: Standard greedy assignment with most constrained first
-        while (availableGroups.length > 0 && availableTeams.length > 0) {
-            let placed = false;
-            
-            // Find the most constrained group (fewest eligible teams)
-            let bestGroup = null;
-            let bestEligibleTeams = [];
-            let minOptions = Infinity;
-            
-            for (const group of availableGroups) {
-                const eligibleTeams = availableTeams.filter(team => 
-                    this.canAddTeamToGroup(team, this.groups[group])
-                );
-                
-                if (eligibleTeams.length > 0 && eligibleTeams.length < minOptions) {
-                    minOptions = eligibleTeams.length;
-                    bestGroup = group;
-                    bestEligibleTeams = eligibleTeams;
-                }
-            }
-            
-            if (bestGroup && bestEligibleTeams.length > 0) {
-                // Among eligible teams for this group, pick the most constrained team
-                const teamWithOptions = bestEligibleTeams.map(team => ({
-                    team,
-                    options: availableGroups.filter(g => 
-                        this.canAddTeamToGroup(team, this.groups[g])
-                    ).length
-                }));
-                
-                teamWithOptions.sort((a, b) => a.options - b.options);
-                const chosenTeam = teamWithOptions[0].team;
-                
-                placements.push({ team: chosenTeam, group: bestGroup });
-                availableTeams.splice(availableTeams.indexOf(chosenTeam), 1);
-                availableGroups.splice(availableGroups.indexOf(bestGroup), 1);
-                placed = true;
-                
-                console.log(`✅ Placed ${chosenTeam.name} (${chosenTeam.confederation}) in Group ${bestGroup}`);
-            }
-            
-            if (!placed) {
-                console.error(`❌ CRITICAL: Cannot place any remaining teams in available groups`);
-                console.error(`Remaining teams:`, availableTeams.map(t => `${t.name}(${t.confederation})`));
-                console.error(`Remaining groups:`, availableGroups);
-                
-                // Emergency fallback: Force placement ignoring some constraints
-                if (availableGroups.length > 0 && availableTeams.length > 0) {
-                    const fallbackTeam = availableTeams[0];
-                    const fallbackGroup = availableGroups[0];
-                    
-                    console.warn(`⚠️ FALLBACK: Force placing ${fallbackTeam.name} in Group ${fallbackGroup}`);
-                    placements.push({ team: fallbackTeam, group: fallbackGroup });
-                    availableTeams.splice(0, 1);
-                    availableGroups.splice(0, 1);
-                }
-                break;
-            }
-        }
-        
-        // Handle any remaining unplaced teams
-        if (availableTeams.length > 0) {
-            console.error(`❌ UNPLACED TEAMS: ${availableTeams.length} teams could not be placed`);
-            availableTeams.forEach(team => {
-                console.error(`  - ${team.name} (${team.confederation})`);
+    drawPotWithBacktracking(teams, potNumber, placements = []) {
+        // Base case: all teams placed successfully
+        if (teams.length === 0) {
+            // Apply all placements
+            placements.forEach(placement => {
+                this.groups[placement.group].push(placement.team);
+                this.logEntry(`   ${placement.team.name} (${placement.team.confederation}) → Group ${placement.group}`, 'team-drawn');
             });
+            return true;
         }
         
-        if (availableGroups.length > 0) {
-            console.error(`❌ INCOMPLETE GROUPS: ${availableGroups.length} groups will be incomplete`);
-            availableGroups.forEach(group => {
-                console.error(`  - Group ${group} (currently ${this.groups[group].length} teams)`);
+        // Get current team to place
+        const team = teams[0];
+        const remainingTeams = teams.slice(1);
+        
+        // Find eligible groups for this team
+        const currentIncompleteGroups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+            .filter(groupLetter => {
+                const currentSize = this.groups[groupLetter].length + 
+                    placements.filter(p => p.group === groupLetter).length;
+                return currentSize < potNumber;
             });
+        
+        const eligibleGroups = currentIncompleteGroups.filter(groupLetter => {
+            // Create a temporary group state including pending placements
+            const tempGroup = [...this.groups[groupLetter]];
+            placements.filter(p => p.group === groupLetter).forEach(p => {
+                tempGroup.push(p.team);
+            });
+            
+            return this.canAddTeamToGroup(team, tempGroup);
+        });
+        
+        if (eligibleGroups.length === 0) {
+            // No valid placement for this team, backtrack
+            return false;
         }
         
-        console.log(`🏁 Placement complete: ${placements.length} successful placements`);
-        return placements;
+        // Shuffle to add randomness
+        this.shuffleArray(eligibleGroups);
+        
+        // Try each eligible group
+        for (const group of eligibleGroups) {
+            const newPlacements = [...placements, { team, group }];
+            
+            // Recursively try to place remaining teams
+            if (this.drawPotWithBacktracking(remainingTeams, potNumber, newPlacements)) {
+                return true; // Success!
+            }
+            // If failed, try next group (backtracking)
+        }
+        
+        // No valid solution found
+        return false;
     }
     
+    forceCompletePot(teams, potNumber) {
+        // Emergency fallback - should rarely be used with good backtracking
+        teams.forEach(team => {
+            const incompleteGroups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+                .filter(groupLetter => this.groups[groupLetter].length < potNumber);
+            
+            if (incompleteGroups.length > 0) {
+                this.groups[incompleteGroups[0]].push(team);
+                this.logEntry(`⚠️ EMERGENCY: ${team.name} → Group ${incompleteGroups[0]} (CONSTRAINT VIOLATION!)`, 'error');
+            }
+        });
+    }
+    
+    validateConfederationConstraints(potNumber) {
+        this.logEntry(`🔍 CONSTRAINT VALIDATION: Checking all groups after Pot ${potNumber}`, 'validation');
+        
+        let violationsFound = 0;
+        
+        ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'].forEach(groupLetter => {
+            const group = this.groups[groupLetter];
+            if (group.length === 0) return;
+            
+            // Count teams by confederation
+            const confederationCounts = {};
+            group.forEach(team => {
+                if (!team.placeholder) {
+                    confederationCounts[team.confederation] = (confederationCounts[team.confederation] || 0) + 1;
+                }
+            });
+            
+            // Check violations
+            Object.entries(confederationCounts).forEach(([confederation, count]) => {
+                const maxAllowed = confederation === 'UEFA' ? 2 : 1;
+                if (count > maxAllowed) {
+                    violationsFound++;
+                    const violatingTeams = group.filter(t => t.confederation === confederation).map(t => t.name);
+                    this.logEntry(`❌ VIOLATION: Group ${groupLetter} has ${count} ${confederation} teams (max ${maxAllowed}): ${violatingTeams.join(', ')}`, 'error');
+                }
+            });
+        });
+        
+        if (violationsFound === 0) {
+            this.logEntry(`✅ CONSTRAINT CHECK PASSED: No confederation violations found`, 'success');
+        } else {
+            this.logEntry(`❌ CONSTRAINT CHECK FAILED: ${violationsFound} violations found!`, 'error');
+        }
+    }
 
     getAvailableGroups(team) {
         const groupLetters = Object.keys(this.groups);
@@ -464,16 +483,25 @@ class WorldCupDrawSimulator {
         if (team.placeholder) return true; // Placeholders can go anywhere
         
         const confederation = team.confederation;
-        const confederationInfo = CONFEDERATIONS[confederation];
         
-        if (!confederationInfo) return true;
-        
+        // Count teams from same confederation already in group
         const sameConfederationCount = group.filter(t => t.confederation === confederation).length;
-        const maxAllowed = confederationInfo.maxPerGroup;
         
-        // Strict enforcement: UEFA can have max 2, all others max 1
-        if (confederation === 'UEFA' && sameConfederationCount >= 2) return false;
-        if (confederation !== 'UEFA' && sameConfederationCount >= 1) return false;
+        // Apply FIFA confederation rules strictly
+        if (confederation === 'UEFA') {
+            // UEFA: Maximum 2 teams per group
+            if (sameConfederationCount >= 2) {
+                console.log(`❌ UEFA limit: Group already has ${sameConfederationCount} UEFA teams, cannot add ${team.name}`);
+                return false;
+            }
+        } else {
+            // All other confederations: Maximum 1 team per group
+            if (sameConfederationCount >= 1) {
+                const existingTeam = group.find(t => t.confederation === confederation);
+                console.log(`❌ ${confederation} limit: Group already has ${existingTeam.name}, cannot add ${team.name}`);
+                return false;
+            }
+        }
         
         return true;
     }
