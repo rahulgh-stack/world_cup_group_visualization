@@ -28,12 +28,12 @@ class PlayoffSimulator {
         };
     }
 
-    // Simulate a single match
+    // Simulate a single match - higher FIFA points always wins but display probability
     simulateMatch(team1, team2) {
         const probs = this.calculateWinProbability(team1.points, team2.points);
-        const random = Math.random();
         
-        const winner = random < probs.team1 ? team1 : team2;
+        // CHANGED: Instead of random, higher points always wins
+        const winner = team1.points >= team2.points ? team1 : team2;
         const loser = winner === team1 ? team2 : team1;
         const winnerProb = winner === team1 ? probs.team1 : probs.team2;
         

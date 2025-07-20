@@ -335,6 +335,159 @@ body {
     margin-top: 2px;
 }
 
+.team-with-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.vs-text {
+    margin: 0 6px;
+    font-weight: normal;
+    color: var(--fifa-red);
+}
+
+/* Match View Toggle */
+.matches-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 4px;
+}
+
+.toggle-view-btn {
+    background: var(--fifa-gray);
+    color: var(--fifa-dark);
+    border: 1px solid var(--fifa-blue);
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.6rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.toggle-view-btn:hover {
+    background: var(--fifa-light-blue);
+    color: var(--fifa-white);
+}
+
+.toggle-view-btn.active {
+    background: var(--fifa-blue);
+    color: var(--fifa-white);
+}
+
+/* City View Specific Styling */
+.city-matches {
+    background: var(--fifa-gray);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--fifa-blue);
+}
+
+.city-matches-header {
+    background: var(--fifa-blue);
+    color: var(--fifa-white);
+    padding: 4px;
+    border-radius: 3px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+}
+
+.city-match {
+    background: var(--fifa-white);
+    padding: 4px;
+    margin: 3px 0;
+    border-radius: 3px;
+    border-left: 2px solid var(--fifa-green);
+    font-size: 0.55rem;
+}
+
+.city-match-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.city-match-teams {
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.city-match-details {
+    font-size: 0.5rem;
+    color: #666;
+}
+
+/* Stage Indicator */
+.stage-indicator {
+    font-size: 0.6rem;
+    color: var(--fifa-red);
+    font-weight: normal;
+    font-style: italic;
+}
+
+/* Calendar View */
+.calendar-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+}
+
+.calendar-day {
+    background: var(--fifa-gray);
+    border-radius: 6px;
+    padding: 8px;
+    border: 1px solid var(--fifa-blue);
+}
+
+.calendar-day-header {
+    background: var(--fifa-blue);
+    color: var(--fifa-white);
+    padding: 4px;
+    border-radius: 3px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.7rem;
+    margin-bottom: 6px;
+}
+
+.calendar-match {
+    background: var(--fifa-white);
+    padding: 4px;
+    margin: 3px 0;
+    border-radius: 3px;
+    border-left: 2px solid var(--fifa-green);
+    font-size: 0.55rem;
+}
+
+.calendar-match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.calendar-match-teams {
+    font-weight: bold;
+    line-height: 1.2;
+    margin: 2px 0;
+}
+
+.calendar-match-venue {
+    font-size: 0.5rem;
+    color: #666;
+    font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .pots-container {
@@ -456,6 +609,25 @@ body {
     color: #888 !important;
     font-style: italic;
     font-size: 0.45rem !important;
+}
+
+/* Team Status Labels */
+.team-host-status {
+    color: var(--fifa-gold) !important;
+    font-weight: bold;
+}
+
+.team-qualified-status {
+    color: var(--fifa-green) !important;
+}
+
+.team-projected-status {
+    color: var(--fifa-blue) !important;
+}
+
+.team-playoff-status {
+    color: var(--fifa-red) !important;
+    font-weight: bold;
 }
 
 /* Host team styling */
@@ -594,4 +766,47 @@ body {
 
 .playoffs-container:not(.collapsed) {
     display: grid;
+}
+
+/* Playoff Notes - Cosmetic Only */
+.playoff-note {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border: 1px solid var(--fifa-gold);
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.playoff-note-content {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #856404;
+    line-height: 1.3;
+}
+
+.playoff-note-details {
+    font-size: 0.6rem;
+    font-weight: normal;
+    color: #6c5701;
+    display: block;
+    margin-top: 2px;
+}
+
+.playoff-reminder {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border: 1px solid var(--fifa-light-blue);
+    border-radius: 6px;
+    padding: 6px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.playoff-reminder-content {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--fifa-blue);
+    font-style: italic;
 }

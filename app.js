@@ -89,6 +89,20 @@ class WorldCupApp {
         
         potsContainer.innerHTML = '';
         
+        // Show playoff status note if no playoff winners yet
+        const hasPlayoffWinners = Object.values(pots).some(pot => pot.some(t => t.playoffWinner));
+        if (!hasPlayoffWinners) {
+            const playoffNote = document.createElement('div');
+            playoffNote.className = 'playoff-note';
+            playoffNote.innerHTML = `
+                <div class="playoff-note-content">
+                    🏆 <strong>6 Playoff Winners</strong> will be added to Pots after March 2026 playoffs
+                    <span class="playoff-note-details">(4 UEFA + 2 Inter-confederation)</span>
+                </div>
+            `;
+            potsContainer.appendChild(playoffNote);
+        }
+        
         for (let potNumber = 1; potNumber <= 4; potNumber++) {
             const potDiv = document.createElement('div');
             potDiv.className = 'pot';
@@ -116,10 +130,39 @@ class WorldCupApp {
                 
                 const confederationInfo = CONFEDERATIONS[team.confederation] || { logo: '🏳️', name: team.confederation };
                 
+                // Determine team status based on actual qualification document
+                let statusLabel = '';
+                let statusClass = '';
+                
+                if (team.host) {
+                    statusLabel = ' (Host)';
+                    statusClass = ' team-host-status';
+                } else if (team.placeholder) {
+                    statusLabel = '';
+                    statusClass = '';
+                } else if (team.playoffWinner) {
+                    statusLabel = '';
+                    statusClass = ' team-playoff-status';
+                } else {
+                    // Check actual qualification status
+                    const alreadyQualified = [
+                        'Iran', 'Japan', 'South Korea', 'Australia', 'Jordan', 'Uzbekistan',
+                        'Canada', 'Mexico', 'United States', 'Argentina', 'Ecuador', 'Brazil', 'New Zealand'
+                    ];
+                    
+                    if (alreadyQualified.includes(team.name)) {
+                        statusLabel = ' (Qualified)';
+                        statusClass = ' team-qualified-status';
+                    } else {
+                        statusLabel = ' (Projected)';
+                        statusClass = ' team-projected-status';
+                    }
+                }
+                
                 // Special handling for playoff placeholders
                 const teamNameDisplay = team.placeholder ? 
                     `${team.name}${team.description ? ` (${team.description})` : ''}` : 
-                    `${team.name}${playoffLabel}`;
+                    `${team.name}${playoffLabel}${statusLabel}`;
                 
                 const pointsDisplay = team.placeholder ? 
                     (team.points === 'TBD' ? `<div class="team-points placeholder-points">March 2026</div>` : '') :
@@ -128,7 +171,7 @@ class WorldCupApp {
                 teamDiv.innerHTML = `
                     <span class="team-flag">${team.flag}</span>
                     <div class="team-info">
-                        <div class="team-name">${teamNameDisplay}</div>
+                        <div class="team-name${statusClass}">${teamNameDisplay}</div>
                         <div class="team-confederation ${team.confederation}">
                             <span>${confederationInfo.logo}</span>
                             <span>${confederationInfo.name}</span>
@@ -141,6 +184,18 @@ class WorldCupApp {
             });
             
             potsContainer.appendChild(potDiv);
+        }
+        
+        // Add playoff reminder at the bottom if no winners yet
+        if (!hasPlayoffWinners) {
+            const reminderDiv = document.createElement('div');
+            reminderDiv.className = 'playoff-reminder';
+            reminderDiv.innerHTML = `
+                <div class="playoff-reminder-content">
+                    ⚡ Click "Simulate Complete Draw" to run playoffs and see final pots
+                </div>
+            `;
+            potsContainer.appendChild(reminderDiv);
         }
     }
 
@@ -248,9 +303,11 @@ class WorldCupApp {
                     <div class="playoff-path-header">Path 1</div>
                     <div class="playoff-match semifinal">
                         <strong>R1:</strong> ${results.intercontinental.semiFinals[0].firstMatch.result}
+                        <div class="match-probability">${results.intercontinental.semiFinals[0].firstMatch.matchup}</div>
                     </div>
                     <div class="playoff-match final">
                         <strong>Final:</strong> ${results.intercontinental.semiFinals[0].final.result}
+                        <div class="match-probability">${results.intercontinental.semiFinals[0].final.matchup}</div>
                     </div>
                     <div class="playoff-winner">
                         <span class="team-flag">${results.intercontinental.winners[0].flag}</span>
@@ -261,9 +318,11 @@ class WorldCupApp {
                     <div class="playoff-path-header">Path 2</div>
                     <div class="playoff-match semifinal">
                         <strong>R1:</strong> ${results.intercontinental.semiFinals[1].firstMatch.result}
+                        <div class="match-probability">${results.intercontinental.semiFinals[1].firstMatch.matchup}</div>
                     </div>
                     <div class="playoff-match final">
                         <strong>Final:</strong> ${results.intercontinental.semiFinals[1].final.result}
+                        <div class="match-probability">${results.intercontinental.semiFinals[1].final.matchup}</div>
                     </div>
                     <div class="playoff-winner">
                         <span class="team-flag">${results.intercontinental.winners[1].flag}</span>
@@ -296,7 +355,7 @@ class WorldCupApp {
             
             groupDiv.appendChild(groupHeader);
             
-            group.forEach((team, index) => {
+            group.forEach((team) => {
                 const teamDiv = document.createElement('div');
                 let teamClasses = 'group-team';
                 
@@ -313,10 +372,39 @@ class WorldCupApp {
                 
                 const confederationInfo = CONFEDERATIONS[team.confederation] || { logo: '🏳️', name: team.confederation };
                 
+                // Determine team status based on actual qualification document
+                let statusLabel = '';
+                let statusClass = '';
+                
+                if (team.host) {
+                    statusLabel = ' (Host)';
+                    statusClass = ' team-host-status';
+                } else if (team.placeholder) {
+                    statusLabel = '';
+                    statusClass = '';
+                } else if (team.playoffWinner) {
+                    statusLabel = '';
+                    statusClass = ' team-playoff-status';
+                } else {
+                    // Check actual qualification status
+                    const alreadyQualified = [
+                        'Iran', 'Japan', 'South Korea', 'Australia', 'Jordan', 'Uzbekistan',
+                        'Canada', 'Mexico', 'United States', 'Argentina', 'Ecuador', 'Brazil', 'New Zealand'
+                    ];
+                    
+                    if (alreadyQualified.includes(team.name)) {
+                        statusLabel = ' (Qualified)';
+                        statusClass = ' team-qualified-status';
+                    } else {
+                        statusLabel = ' (Projected)';
+                        statusClass = ' team-projected-status';
+                    }
+                }
+                
                 // Special handling for playoff placeholders
                 const teamNameDisplay = team.placeholder ? 
                     `${team.name}${team.description ? ` (${team.description})` : ''}` : 
-                    `${team.name}${playoffLabel}`;
+                    `${team.name}${playoffLabel}${statusLabel}`;
                 
                 const pointsDisplay = team.placeholder ? 
                     (team.points === 'TBD' ? `<div class="team-points placeholder-points">March 2026</div>` : '') :
@@ -325,7 +413,7 @@ class WorldCupApp {
                 teamDiv.innerHTML = `
                     <span class="team-flag">${team.flag}</span>
                     <div class="team-info">
-                        <div class="team-name">${teamNameDisplay}</div>
+                        <div class="team-name${statusClass}">${teamNameDisplay}</div>
                         <div class="team-confederation ${team.confederation}">
                             <span>${confederationInfo.logo}</span>
                             <span>${confederationInfo.name}</span>
@@ -364,12 +452,22 @@ class WorldCupApp {
                 const matchDiv = document.createElement('div');
                 matchDiv.className = 'match';
                 
+                // Get team flags from current groups
+                const team1Info = this.currentDraw[letter].find(t => t.name === match.team1);
+                const team2Info = this.currentDraw[letter].find(t => t.name === match.team2);
+                const team1Flag = team1Info ? team1Info.flag : '🏳️';
+                const team2Flag = team2Info ? team2Info.flag : '🏳️';
+                
                 matchDiv.innerHTML = `
                     <div class="match-header">
                         <span class="match-number">Match ${match.match}</span>
                         <span class="match-date">${match.date}</span>
                     </div>
-                    <div class="match-teams">${match.team1} vs ${match.team2}</div>
+                    <div class="match-teams">
+                        <span class="team-with-flag">${team1Flag} ${match.team1}</span>
+                        <span class="vs-text">vs</span>
+                        <span class="team-with-flag">${team2Flag} ${match.team2}</span>
+                    </div>
                     <div class="match-venue">${match.venue}, ${match.venueInfo ? `${match.venueInfo.city}, ${match.venueInfo.country}` : ''}</div>
                 `;
                 
@@ -378,6 +476,170 @@ class WorldCupApp {
             
             matchesContainer.appendChild(groupMatchesDiv);
         });
+    }
+    
+    displayMatchesByCity() {
+        const matchesContainer = document.getElementById('matchesContainer');
+        matchesContainer.innerHTML = '';
+        
+        if (!this.currentMatches) {
+            matchesContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No matches to display. Run the draw first.</div>';
+            return;
+        }
+        
+        // Group matches by city
+        const matchesByCity = {};
+        this.currentMatches.forEach(match => {
+            const city = match.venueInfo ? `${match.venueInfo.city}, ${match.venueInfo.country}` : 'Unknown City';
+            if (!matchesByCity[city]) {
+                matchesByCity[city] = [];
+            }
+            matchesByCity[city].push(match);
+        });
+        
+        // Sort cities alphabetically
+        const sortedCities = Object.keys(matchesByCity).sort();
+        
+        sortedCities.forEach(city => {
+            const cityMatchesDiv = document.createElement('div');
+            cityMatchesDiv.className = 'city-matches';
+            
+            const cityHeader = document.createElement('div');
+            cityHeader.className = 'city-matches-header';
+            cityHeader.textContent = `${city} (${matchesByCity[city].length} matches)`;
+            
+            cityMatchesDiv.appendChild(cityHeader);
+            
+            // Sort matches by date and match number
+            matchesByCity[city].sort((a, b) => a.match - b.match);
+            
+            matchesByCity[city].forEach(match => {
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'city-match';
+                
+                // Get team flags
+                const team1Info = this.getTeamFromMatch(match.team1);
+                const team2Info = this.getTeamFromMatch(match.team2);
+                const team1Flag = team1Info ? team1Info.flag : '🏳️';
+                const team2Flag = team2Info ? team2Info.flag : '🏳️';
+                
+                matchDiv.innerHTML = `
+                    <div class="city-match-info">
+                        <span class="match-number" style="background: var(--fifa-red); color: white; padding: 1px 3px; border-radius: 2px; font-size: 0.5rem;">M${match.match}</span>
+                        <span class="match-date" style="color: var(--fifa-blue); font-weight: bold; font-size: 0.5rem;">${match.date}</span>
+                    </div>
+                    <div class="city-match-teams">
+                        <span class="team-with-flag">${team1Flag} ${match.team1}</span>
+                        <span class="vs-text">vs</span>
+                        <span class="team-with-flag">${team2Flag} ${match.team2}</span>
+                    </div>
+                    <div class="city-match-details">
+                        Group ${match.group} • ${match.venue}
+                    </div>
+                `;
+                
+                cityMatchesDiv.appendChild(matchDiv);
+            });
+            
+            matchesContainer.appendChild(cityMatchesDiv);
+        });
+    }
+    
+    getTeamFromMatch(teamName) {
+        if (!this.currentDraw) return null;
+        
+        for (const groupLetter of Object.keys(this.currentDraw)) {
+            const team = this.currentDraw[groupLetter].find(t => t.name === teamName);
+            if (team) return team;
+        }
+        return null;
+    }
+    
+    displayMatchesByCalendar() {
+        const matchesContainer = document.getElementById('matchesContainer');
+        matchesContainer.innerHTML = '';
+        
+        if (!this.currentMatches) {
+            matchesContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No matches to display. Run the draw first.</div>';
+            return;
+        }
+        
+        // Group matches by date
+        const matchesByDate = {};
+        this.currentMatches.forEach(match => {
+            const date = match.date;
+            if (!matchesByDate[date]) {
+                matchesByDate[date] = [];
+            }
+            matchesByDate[date].push(match);
+        });
+        
+        // Create calendar container
+        const calendarContainer = document.createElement('div');
+        calendarContainer.className = 'calendar-container';
+        
+        // Sort dates chronologically
+        const sortedDates = Object.keys(matchesByDate).sort((a, b) => {
+            // Parse dates (format: "June 11, 2026")
+            const dateA = new Date(a);
+            const dateB = new Date(b);
+            return dateA - dateB;
+        });
+        
+        sortedDates.forEach(date => {
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day';
+            
+            // Parse date to get day of week
+            const dateObj = new Date(date);
+            const dayOfWeek = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+            
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'calendar-day-header';
+            dayHeader.innerHTML = `
+                <div>${dayOfWeek}</div>
+                <div>${date}</div>
+                <div style="font-size: 0.6rem; font-weight: normal; margin-top: 2px;">${matchesByDate[date].length} matches</div>
+            `;
+            
+            dayDiv.appendChild(dayHeader);
+            
+            // Sort matches by match number
+            matchesByDate[date].sort((a, b) => a.match - b.match);
+            
+            matchesByDate[date].forEach(match => {
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'calendar-match';
+                
+                // Get team flags
+                const team1Info = this.getTeamFromMatch(match.team1);
+                const team2Info = this.getTeamFromMatch(match.team2);
+                const team1Flag = team1Info ? team1Info.flag : '🏳️';
+                const team2Flag = team2Info ? team2Info.flag : '🏳️';
+                
+                matchDiv.innerHTML = `
+                    <div class="calendar-match-header">
+                        <span class="match-number" style="background: var(--fifa-red); color: white; padding: 1px 3px; border-radius: 2px; font-size: 0.5rem;">Match ${match.match}</span>
+                        <span class="group-indicator" style="background: var(--fifa-gold); color: var(--fifa-dark); padding: 1px 3px; border-radius: 2px; font-size: 0.5rem; font-weight: bold;">Group ${match.group}</span>
+                    </div>
+                    <div class="calendar-match-teams">
+                        <span class="team-with-flag">${team1Flag} ${match.team1}</span>
+                        <span class="vs-text">vs</span>
+                        <span class="team-with-flag">${team2Flag} ${match.team2}</span>
+                    </div>
+                    <div class="calendar-match-venue">
+                        ${match.venue}
+                        ${match.venueInfo ? ` • ${match.venueInfo.city}, ${match.venueInfo.country}` : ''}
+                    </div>
+                `;
+                
+                dayDiv.appendChild(matchDiv);
+            });
+            
+            calendarContainer.appendChild(dayDiv);
+        });
+        
+        matchesContainer.appendChild(calendarContainer);
     }
 
     // Utility function to get confederation color
@@ -414,5 +676,28 @@ function togglePlayoffDetails() {
 
 // Initialize the app when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new WorldCupApp();
+    window.worldCupApp = new WorldCupApp();
 });
+
+// Global function for switching match views
+function switchMatchView(viewType) {
+    const groupBtn = document.getElementById('groupViewBtn');
+    const cityBtn = document.getElementById('cityViewBtn');
+    const calendarBtn = document.getElementById('calendarViewBtn');
+    
+    // Reset all buttons
+    groupBtn.classList.remove('active');
+    cityBtn.classList.remove('active');
+    calendarBtn.classList.remove('active');
+    
+    if (viewType === 'group') {
+        groupBtn.classList.add('active');
+        window.worldCupApp.displayMatches();
+    } else if (viewType === 'city') {
+        cityBtn.classList.add('active');
+        window.worldCupApp.displayMatchesByCity();
+    } else if (viewType === 'calendar') {
+        calendarBtn.classList.add('active');
+        window.worldCupApp.displayMatchesByCalendar();
+    }
+}
